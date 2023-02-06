@@ -1,0 +1,21 @@
+
+letrec [
+  fun add_uncurried_known_101(m_104,n_105) := 
+    case n_105 of {
+    | O => 
+      halt m_104
+    | S => 
+      let p_106 := proj_0 101 n_105 in 
+      let y_107 := app add_uncurried_known_101(m_104,p_106) in 
+      let y_108 := S(y_107) in 
+      halt y_108
+    }
+  fun test.inc_wrapper_102(env_109,n_110) := 
+    let y_112 := O() in 
+    let y_113 := S(y_112) in 
+    add_uncurried_known_101(y_113,n_110)
+] in
+let env_114 := con_104() in 
+let test.inc_wrapper_clo_115 := con_15(test.inc_wrapper_102,env_114) in 
+halt test.inc_wrapper_clo_115
+
