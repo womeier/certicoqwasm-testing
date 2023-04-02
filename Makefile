@@ -14,5 +14,4 @@ sha256.vo: sha256.v
 	coqc $<
 
 clean:
-	rm -f *.vos *.glob *.vo *.vok *.s *.c *.h *.ir *.wat *.wasm
-
+	rm -f *.vos *.glob *.vo *.vok *.s *.c *.h *.ir *.wat *.wasm rm *.wasm.v
