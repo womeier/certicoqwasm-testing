@@ -48,4 +48,7 @@ Definition foo := mapAlternate odd even [1 ; 2 ; 3 ; 4].
 
 CertiCoq Show IR -file "foo" foo.
 CertiCoq Generate WASM -file "foo" foo.
+
+(* CertiCoq Show IR -cps -file "foo" foo. *)
+(* CertiCoq Generate WASM -cps -file "foo" foo. *)
 (* CertiCoq Compile -file "foo" foo. *)
