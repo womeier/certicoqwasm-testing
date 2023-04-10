@@ -22,19 +22,17 @@ preamble = """
 Unset Universe Checking.
 
 From Coq Require Import String.
-From Wasm Require Import datatypes prettyprint.
-
-From CertiCoq Require Import LambdaANF.toplevel Common.Common Common.compM Common.Pipeline_utils.
-Require Import ExtLib.Structures.Monad.
-From MetaCoq.Template Require Import bytestring MCString.
 From Coq Require Import ZArith List.
-
-From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show CodegenWASM.wasm_map_util.
-Import MonadNotation.
-
 From Coq.Strings Require Import Byte.
 
-From Wasm Require Import binary_format_parser binary_format_printer
+From CertiCoq Require Import LambdaANF.toplevel Common.Common Common.compM Common.Pipeline_utils.
+From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show CodegenWASM.wasm_map_util.
+From MetaCoq.Template Require Import bytestring MCString.
+
+Require Import ExtLib.Structures.Monad.
+Import MonadNotation.
+
+From Wasm Require Import binary_format_parser binary_format_printer datatypes prettyprint
                          datatypes_properties check_toks instantiation.
 """
 
