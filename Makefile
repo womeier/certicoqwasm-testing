@@ -6,10 +6,10 @@ foo.wasm:
 foo.wat: foo.wasm
 	wasm2wat foo.wasm > foo.wat
 
-foo_run: foo.wasm foo.wat
+foo_run: clean foo.wasm foo.wat
 	nodejs foo.js
 
-foo_check: foo.wasm
+foo_check: clean foo.wasm
 	@python3 wasm_to_coq.py foo.wasm
 	coqc foo_wasm.v
 
