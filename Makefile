@@ -1,15 +1,19 @@
-all: foo
+all: foo_run
 
-foo:
+foo.wasm:
 	coqc test.v
-#	cat foo.ir
-#	echo "-----------------------------------------"
+
+foo.wat: foo.wasm
 	wasm2wat foo.wasm > foo.wat
+
+foo_run: foo.wasm foo.wat
 	nodejs foo.js
 
-foo_check:
+foo_check: foo.wasm
 	@python3 wasm_to_coq.py foo.wasm
 	coqc foo_wasm.v
+
+# -------------------------------------------------------------
 
 sha: sha256.vo
 	ulimit -s unlimited && coqc test_sha.v
