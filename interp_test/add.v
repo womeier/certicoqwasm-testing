@@ -595,28 +595,32 @@ Check instance.
 Print instance.
 Lemma test_reduces (inst : instance) (hs_initial : host_state)
                    (hs_result : host_state) :
-  reduce_trans (hs_initial, empty_store_record host_function, Build_frame [nat_to_i32 1; nat_to_i32 2] inst , map AI_basic test_function.(modfunc_body) (* [BI_const (nat_to_i32 1); BI_const (nat_to_i32 3); BI_binop T_i32 (Binop_i BOI_add)] *) )
+  reduce_trans (hs_initial, empty_store_record host_function, Build_frame [nat_to_i32 1; nat_to_i32 2] inst , map AI_basic test_function.(modfunc_body))
                (hs_initial, empty_store_record host_function, Build_frame [nat_to_i32 1; nat_to_i32 2] inst, [AI_basic (BI_const (nat_to_i32 3))]).
 Proof.
   cbn.
   eapply rt_trans with (y := (?[hs], ?[sr], ?[f], ?[s] ++ ?[t])).
-  apply rt_step. cbn.
-  explode_and_simplify.
-  replace ([:: AI_basic (BI_get_local 0); AI_basic (BI_get_local 1);
-      AI_basic (BI_binop T_i32 (Binop_i BOI_add))]) with
-      ([:: AI_basic (BI_get_local 0)] ++ ([AI_basic (BI_get_local 1);
-      AI_basic (BI_binop T_i32 (Binop_i BOI_add))])).
-  - apply r_elimr. apply r_get_local. cbn. reflexivity.
-  - reflexivity.
-  - cbn.
+  {
+    apply rt_step. cbn.
+    explode_and_simplify.
+    replace ([:: AI_basic (BI_get_local 0); AI_basic (BI_get_local 1);
+        AI_basic (BI_binop T_i32 (Binop_i BOI_add))]) with
+        ([:: AI_basic (BI_get_local 0)] ++ ([AI_basic (BI_get_local 1);
+        AI_basic (BI_binop T_i32 (Binop_i BOI_add))])).
+    apply r_elimr. apply r_get_local. cbn. reflexivity.
+    reflexivity.
+  }
+  cbn.
   eapply rt_trans with (y := (?[hs], ?[sr], ?[f], ?[s] ++ ?[t])).
-  eapply rt_step. cbn.
-  explode_and_simplify.
-  rewrite catA.
-  apply r_elimr.
-  - apply r_eliml; auto.
-  - apply r_get_local. reflexivity.
-  - cbn. apply rt_step. cbn. apply r_simple. constructor. cbn. reflexivity.
+  {
+    eapply rt_step. cbn.
+    explode_and_simplify.
+    rewrite catA.
+    apply r_elimr.
+    apply r_eliml; auto.
+    apply r_get_local. reflexivity.
+  }
+  cbn. apply rt_step. cbn. apply r_simple. constructor. (* compute. *) reflexivity.
 Qed.
 End OpsemTest.
 
