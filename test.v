@@ -41,13 +41,13 @@ Fixpoint mapAlternate {A B} (f g : A -> B) (l : list A) : list B :=
 
 (* Definition foo := fun (x:bool) => inc 42.*)
 
-Definition foo := mapAlternate odd even [1 ; 2 ; 3 ; 4].
+Definition foo := map odd [1 ; 2 ; 3 ; 4].
 
 (* Definition foo := fold_left andb (map odd (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 nil)))))) true. *)
 (* Definition foo := fold_left andb (map odd [1; 3; 5; 8]) true.*)
 
-CertiCoq Show IR -file "foo" foo.
-CertiCoq Generate WASM -file "foo" foo.
+CertiCoq Show IR -cps -file "foo" foo.
+CertiCoq Generate WASM -cps -file "foo" foo.
 
 (* CertiCoq Show IR -cps -file "foo" foo. *)
 (* CertiCoq Generate WASM -cps -file "foo" foo. *)
