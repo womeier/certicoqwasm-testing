@@ -4,7 +4,7 @@ foo.wasm:
 	coqc test.v
 
 foo.wat: foo.wasm
-	wasm2wat foo.wasm > foo.wat
+	wasm2wat --no-check foo.wasm > foo.wat
 
 foo_run: clean foo.wasm foo.wat
 	nodejs foo.js
@@ -17,8 +17,8 @@ foo_check: clean foo.wasm
 
 sha: sha256.vo
 	ulimit -s unlimited && coqc test_sha.v
-	wasm2wat sha.wasm > sha.wat
-	python3 compare_output.py ./sha.js ./sha_output.txt
+	wasm2wat --no-check sha.wasm > sha.wat
+	ulimit -s unlimited && python3 compare_output.py ./sha.js ./sha_output.txt
 
 %.vo: %.v
 	coqc $<

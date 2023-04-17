@@ -8,7 +8,7 @@ assert len(sys.argv) == 3, "expected two arguments: 0: js file, 1: file containi
 js_file = sys.argv[1]
 expected = open(sys.argv[2]).read()
 
-out = subprocess.check_output(["nodejs", js_file])
+out = subprocess.check_output(["node", "--stack-size=65500", js_file])
 
 print()
 
