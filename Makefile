@@ -16,6 +16,7 @@ foo_check: clean foo.wasm
 # -------------------------------------------------------------
 
 sha: sha256.vo
+	rm -f sha.wat sha.wasm
 	ulimit -s unlimited && coqc test_sha.v
 	wasm2wat --no-check sha.wasm > sha.wat
 	ulimit -s unlimited && python3 compare_output.py ./sha.js ./sha_output.txt
