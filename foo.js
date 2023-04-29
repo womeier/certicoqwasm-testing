@@ -13,9 +13,7 @@ function write_char (value) {
 let importObject = {
     env: {
         $write_char: write_char,
-        $fn_0 : write_char,
         $write_int: write_int,
-        $fn_1 : write_int,
     }
 /*    env: {
         import_i32: 5_000_000_000, // _ is ignored in numbers in JS and WAT

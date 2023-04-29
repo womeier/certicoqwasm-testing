@@ -13,9 +13,7 @@ function write_char (value) {
 let importObject = {
     env: {
         $write_char: write_char,
-        $fn_0 : write_char,  // TODO: can keep nice export names?
         $write_int: write_int,
-        $fn_1 : write_int,
 
     }
 /*    env: {
