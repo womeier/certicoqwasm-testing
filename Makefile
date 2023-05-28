@@ -7,7 +7,7 @@ foo.wat: foo.wasm
 	wasm2wat --no-check foo.wasm > foo.wat
 
 foo_run: clean foo.wasm foo.wat
-	nodejs --stack-size=65500 foo.js
+	node --stack-size=65500 foo.js
 
 foo_check: clean foo.wasm
 	@python3 wasm_to_coq.py foo.wasm
