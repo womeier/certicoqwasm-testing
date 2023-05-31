@@ -1,25 +1,11 @@
 const fs = require('fs');
 const bytes = fs.readFileSync(__dirname + '/foo.wasm');
 
-function write_int (value) {
-    process.stdout.write(value.toString())
-}
-
-function write_char (value) {
-    var chr = String.fromCharCode(value);
-    process.stdout.write(chr);
-}
-
 let importObject = {
     env: {
-        $write_char: write_char,
-        $write_int: write_int,
+        $write_int:  function(value) { process.stdout.write(value.toString()) },
+        $write_char: function(value) { process.stdout.write(String.fromCharCode(value)) },
     }
-/*    env: {
-        import_i32: 5_000_000_000, // _ is ignored in numbers in JS and WAT
-        import_f32: 123.0123456789,
-        import_f64: 123.0123456789,
-    } */
 };
 
 (async () => {
@@ -31,10 +17,10 @@ let importObject = {
         obj.instance.exports.$main_function();
         let res = obj.instance.exports.result.value;
         process.stdout.write("\n====>");
-        obj.instance.exports.$pretty_print_constructor(res); console.log(""); // newline
+        obj.instance.exports.$pretty_print_constructor(res);
 
         let bytes = obj.instance.exports.bytes_used.value;
-        console.log(`====> used ${bytes} bytes of memory`);
+        console.log(`\n====> used ${bytes} bytes of memory`);
 
     } catch (error) {
         console.log(error);
