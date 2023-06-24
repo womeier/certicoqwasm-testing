@@ -2,12 +2,12 @@ all: foo_run
 
 foo.wasm:
 	ulimit -s unlimited && coqc test.v
-
-foo.wat: foo.wasm
-	wasm2wat --no-check foo.wasm > foo.wat
+	wasm2wat foo.wasm > foo.wat # --no-check may be useful for debugging
+	python3 ./replace-tailcalls.py --path_in foo.wat --path_out foo-tail.wat
+	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
 
 foo_run: clean foo.wasm foo.wat
-	node --stack-size=65500 foo.js
+	node --experimental-wasm-return_call foo.js
 
 foo_check: clean foo.wasm
 	@python3 wasm_to_coq.py foo.wasm
@@ -19,6 +19,9 @@ sha: sha256.vo
 	rm -f sha.wat sha.wasm
 	ulimit -s unlimited && coqc test_sha.v
 	wasm2wat --no-check sha.wasm > sha.wat
+	python3 ./replace-tailcalls.py --path_in sha.wat --path_out sha-tail.wat
+	wat2wasm --enable-tail-call sha-tail.wat -o sha.wasm
+
 	ulimit -s unlimited && python3 compare_output.py ./sha.js ./sha_output.txt
 
 %.vo: %.v

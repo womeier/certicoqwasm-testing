@@ -14,13 +14,16 @@ let importObject = {
     );
 
     try {
+        const start = Date.now();
         obj.instance.exports.$main_function();
+        const stop = Date.now();
+
         let res = obj.instance.exports.result.value;
         process.stdout.write("\n====>");
         obj.instance.exports.$pretty_print_constructor(res);
 
         let bytes = obj.instance.exports.bytes_used.value;
-        console.log(`\n====> used ${bytes} bytes of memory`);
+        console.log(`\n====> used ${bytes} bytes of memory, took ${(stop -start)} ms.`);
 
     } catch (error) {
         console.log(error);
