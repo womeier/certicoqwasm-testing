@@ -29,10 +29,14 @@ let importObject = {
     );
 
     try {
+        const start = Date.now();
+        obj.instance.exports.$main_function();
+        const stop = Date.now();
+
         obj.instance.exports.$main_function();
 
         let bytes = obj.instance.exports.bytes_used.value;
-        console.log(`====> used ${bytes} bytes of memory`);
+        console.log(`\n====> used ${bytes} bytes of memory, took ${(stop -start)} ms.`);
 
         let out_of_mem = obj.instance.exports.result_out_of_mem.value;
         if (out_of_mem == 1) {
