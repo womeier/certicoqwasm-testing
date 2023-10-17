@@ -2,7 +2,7 @@ all: foo_run
 
 foo.wasm:
 	ulimit -s unlimited && coqc test.v
-	wasm2wat foo.wasm > foo.wat # --no-check may be useful for debugging
+	wasm2wat --no-check foo.wasm > foo.wat
 	@python3 ./insert_tailcalls.py --path_in foo.wat --path_out foo-tail.wat
 	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
 
