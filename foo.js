@@ -23,7 +23,7 @@ let importObject = {
         obj.instance.exports.$pretty_print_constructor(res);
 
         let bytes = obj.instance.exports.bytes_used.value;
-        console.log(`\n====> used ${bytes} bytes of memory, took ${(stop -start)} ms.`);
+        console.log(`\n====> used ${bytes} bytes of memory, took ${(stop -start)} (Node.js) ms.`);
 
     } catch (error) {
         console.log(error);
