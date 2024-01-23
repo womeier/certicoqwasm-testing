@@ -19,22 +19,27 @@ foo_check: clean foo.wasm
 
 # -------------------------------------------------------------
 
-sha_cps.wasm: sha256.vo
-	rm -f sha_cps.wat sha_cps.wasm
+sha.wasm: sha256.vo
+	rm -f sha.wat sha.wasm
 	ulimit -s unlimited && coqc test_sha.v
-#	wasm2wat --no-check sha_cps.wasm > sha_cps.wat
-#	@python3 ./insert_tailcalls.py --path_in sha_cps.wat --path_out sha_cps_tail.wat
-#	wat2wasm --enable-tail-call sha_cps_tail.wat -o sha_cps.wasm
+	wasm2wat --no-check sha.wasm > sha.wat
+	@python3 ./insert_tailcalls.py --path_in sha.wat --path_out sha_tail.wat
+	wat2wasm --enable-tail-call sha_tail.wat -o sha.wasm
 
-sha_cps: sha_cps.wasm
+sha_opt.wasm: sha.wasm
+	wasm-opt -O2 --enable-tail-call --enable-mutable-globals sha.wasm --output sha_opt.wasm
+
+sha: sha.wasm
 	python3 compare_output.py ./sha.js ./sha_output.txt
 
 sha_explicit: sha.wasm
-	python3 sha.py
-
-sha_explicit_node: sha.wasm
 	node --experimental-wasm-return_call sha.js
 
+sha_opt: sha_opt.wasm
+	python3 compare_output.py ./sha.js ./sha_output.txt
+
+sha_opt_explicit: sha_opt.wasm
+	node --experimental-wasm-return_call sha_opt.js
 
 %.vo: %.v
 	coqc $<
