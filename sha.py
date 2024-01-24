@@ -1,10 +1,12 @@
-from wasmtime import Store, Module, Instance, Func, FuncType, ValType, Config
+from wasmtime import Store, Module, Instance, Func, FuncType, ValType, Config, Engine
 import sys
 import time
 
-# Almost all operations in wasmtime require a contextual "store" argument to be
-# shared amongst objects
-store = Store()
+config = Config()
+config.wasm_tail_call = True
+
+# Shared amongst objects
+store = Store(Engine(config))
 
 # Here we can compile a `Module` which is then ready for instantiation
 # afterwards
