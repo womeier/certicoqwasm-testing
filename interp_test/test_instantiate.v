@@ -12,7 +12,7 @@
 *)
 
 Unset Universe Checking.
-From Wasm Require Import datatypes prettyprint.
+From Wasm Require Import datatypes pp.
 
 From CertiCoq Require Import LambdaANF.toplevel Common.Common Common.compM Common.Pipeline_utils.
 Require Import ExtLib.Structures.Monad.
@@ -27,9 +27,17 @@ From Coq.Strings Require Import Byte.
 From Wasm Require Import binary_format_parser binary_format_printer host
                          datatypes_properties check_toks instantiation.
 
+From mathcomp Require Import eqtype.
 
 
 Module TestModule.
+
+Variable host_function : eqType.
+Let store_record := store_record host_function.
+Let function_closure := function_closure host_function.
+
+
+Let external_type_checker := external_type_checker host_function.
 
 Definition test_bytes : list Byte.byte := x00 :: x61 :: x73 :: x6d :: x01 :: x00 :: x00 :: x00 :: x01 :: x07 :: x01 :: x60 :: x02 :: x7f :: x7f :: x01 :: x7f :: x03 :: x02 :: x01 :: x00 :: x07 :: x0b :: x01 :: x07 :: x61 :: x64 :: x64 :: x5f :: x69 :: x33 :: x32 :: x00 :: x00 :: x0a :: x09 :: x01 :: x07 :: x00 :: x20 :: x00 :: x20 :: x01 :: x6a :: x0b :: nil.
 
@@ -39,7 +47,7 @@ Compute test_module_opt.
 From mathcomp Require Import seq.
 
 Definition test_module := {|
-  mod_types := [:: Tf [:: T_i32; T_i32] [:: T_i32]];
+  mod_types := [:: Tf [:: T_i32; T_i32] [:: T_i32]; Tf [] []];
   mod_funcs :=
     [:: {|
           modfunc_type := Mk_typeidx 0;
@@ -54,20 +62,28 @@ Definition test_module := {|
   mod_elem := [::];
   mod_data := [::];
   mod_start := None;
-  mod_imports := [::];
+  mod_imports := [:: {| imp_module := String.print "env"
+                         ; imp_name := String.print write_char_function_name
+                         ; imp_desc := ID_func 0
+                         |} ];
   mod_exports :=
     [:: {|
           modexp_name := [:: "a"; "d"; "d"; "_"; "i"; "3"; "2"];
-          modexp_desc := MED_func (Mk_funcidx 0)
+          modexp_desc := MED_func (Mk_funcidx 1)
         |}]
 |}.
 
+Definition imps_option := module_type_checker test_module.
+Compute imps_option.
 
-Definition type_check_test_module :=
+Compute option_map (fun ie => fst ie) imps_option.
+
+
+Definition type_check_test_module_bytes :=
   m <- test_module_opt ;;
   module_type_checker m.
 
-Compute type_check_test_module.
+Compute type_check_test_module_bytes.
 
 Definition test_function_type := Tf [T_i32; T_i32] [T_i32].
 Definition test_function := {|
@@ -156,12 +172,12 @@ Definition empty_store_record : store_record := {|
     s_globals := nil;
   |}.
 
-Definition interp_instantiate_wrapper (m : module)
+Definition interp_instantiate_wrapper (m : module) imps
   : error (store_record * instance * list module_export) :=
-  interp_instantiate empty_store_record m nil.
+  interp_instantiate empty_store_record m imps.
 
 Definition inst_module : error (store_record * instance * list module_export) :=
-  interp_instantiate_wrapper test_module.
+  interp_instantiate_wrapper test_module [MED_func (Mk_funcidx 0)].
 Compute inst_module.
 
 Definition fn : error (store_record * frame * seq administrative_instruction)  :=
