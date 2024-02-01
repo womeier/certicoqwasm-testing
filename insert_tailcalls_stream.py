@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# USAGE:  cat input.wat | tqdm --bytes | ./insert_tailcalls_stream.py > input-tailcalls.wat
+
 import sys
 
 
