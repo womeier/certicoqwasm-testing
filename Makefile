@@ -24,7 +24,7 @@ sha.wasm: sha256.vo
 	rm -f sha.wat sha.wasm
 	ulimit -s unlimited && coqc test_sha.v
 	wasm2wat --no-check sha.wasm > sha.wat
-	#@python3 ./insert_tailcalls.py --path_in sha.wat --path_out sha_tail.wat
+# @python3 ./insert_tailcalls.py --path_in sha.wat --path_out sha_tail.wat
 	cat sha.wat | tqdm --bytes | ./insert_tailcalls_stream.py > sha-tail.wat
 	wat2wasm --enable-tail-call sha-tail.wat -o sha.wasm
 
