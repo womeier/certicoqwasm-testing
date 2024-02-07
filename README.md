@@ -1,11 +1,14 @@
-# testing-certicoqwasm
+# Testing certicoqwasm
 
 This repo contains scripts and examples for testing [certicoqwasm](https://github.com/womeier/certicoqwasm).
+
+### Performance evaluation
+See [here](./evaluation/evaluation.md) for some performance comparisons.
 
 ### Checking result of CertiCoq wasm backend
 Run `make sha` to export the computation of a sha256 sum (taken from A.W. Appel) to wasm and run it with nodejs.
 
-### import wasm program in Coq
+### Import wasm program in Coq
 The script `wasm_to_coq.py` takes a given .wasm file and outputs the byte-list that can be parsed using WasmCert-Coq.
 
 
