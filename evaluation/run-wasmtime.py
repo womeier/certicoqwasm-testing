@@ -10,7 +10,7 @@ store = Store(Engine(config))
 
 # Here we can compile a `Module` which is then ready for instantiation
 # afterwards
-module = Module.from_file(store.engine, './color-tail.wasm')
+module = Module.from_file(store.engine, "./color-tail.wasm")
 
 
 # Our module needs two imports
