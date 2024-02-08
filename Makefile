@@ -1,7 +1,11 @@
+OS=$(shell uname)
+
+STACKSIZE=$(if $(filter Linux,$(OS)),unlimited,65532)
+
 all: foo_run
 
 foo.wasm:
-	ulimit -s unlimited && coqc test.v
+	ulimit -s $(STACKSIZE) && coqc test.v
 	wasm2wat --no-check foo.wasm > foo.wat
 	cat foo.wat | tqdm --bytes | ./insert_tailcalls_stream.py > foo-tail.wat
 #	@python3 ./insert_tailcalls.py --path_in foo.wat --path_out foo-tail.wat
@@ -22,7 +26,7 @@ foo_check: clean foo.wasm
 
 sha.wasm: sha256.vo
 	rm -f sha.wat sha.wasm
-	ulimit -s unlimited && coqc test_sha.v
+	ulimit -s $(STACKSIZE) && coqc test_sha.v
 	wasm2wat --no-check sha.wasm > sha.wat
 # @python3 ./insert_tailcalls.py --path_in sha.wat --path_out sha_tail.wat
 	cat sha.wat | tqdm --bytes | ./insert_tailcalls_stream.py > sha-tail.wat
