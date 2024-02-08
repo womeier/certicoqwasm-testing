@@ -4,6 +4,7 @@ This repo contains scripts and examples for testing [certicoqwasm](https://githu
 
 ### Performance evaluation
 See [here](./evaluation/evaluation.md) for some performance comparisons.
+Wasmtime requires installation of wasmtime and wasmtime-py including this [PR](https://github.com/bytecodealliance/wasmtime-py/pull/205).
 
 ### Checking result of CertiCoq wasm backend
 Run `make sha` to export the computation of a sha256 sum (taken from A.W. Appel) to wasm and run it with nodejs.
