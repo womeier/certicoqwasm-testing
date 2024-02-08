@@ -9,12 +9,12 @@ CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
 
 
-benchmarks = [
-    ("./binaries/cps-binaryen-O2-feb-01-24/", "CPS + binaryen -O2"),
-    ("./binaries/cps-feb-01-24/", "CPS"),
-    ("./binaries/non-cps-PROPER-feb-07-24/", "NON-CPS, WasmCert tailcalls"),
-    ("./binaries/non-cps-BAD-feb-06-24", "NON-CPS, only normal tailcalls"),
-]
+benchmarks_info = {
+    "./binaries/cps-binaryen-O2-feb-01-24/": "CPS + binaryen -O2",
+    "./binaries/cps-feb-01-24/": "CPS",
+    "./binaries/non-cps-PROPER-feb-07-24/": "NON-CPS, WasmCert tailcalls",
+    "./binaries/non-cps-BAD-feb-06-24/": "NON-CPS, only normal tailcalls",
+}
 
 measurements = ["time_instantiate", "time_main", "time_pp"]
 
@@ -44,23 +44,44 @@ def single_run_node(folder, program, verbose):
     return json.loads(res)
 
 
+def single_run_wasmtime(folder, program, verbose):
+    r = subprocess.run(
+        [
+            "python3",
+            "run-wasmtime.py",
+            folder,
+            program,
+        ],
+        capture_output=True,
+    )
+
+    wasm_path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
+    assert (
+        r.returncode == 0
+    ), f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}"
+
+    if verbose:
+        print("STDOUT: " + r.stdout.decode("ascii"))
+        print("STDERR: " + r.stdout.decode("ascii"))
+
+    res = "{" + r.stdout.decode("ascii").split("{{")[1].split("}}")[0] + "}"
+    return json.loads(res)
+
+
 @click.command()
 @click.option("--engine", type=str, help="Wasm engine", required=True)
 @click.option("--runs", type=int, help="Number of runs", default=10)
-@click.option("--benchmark", type=int, help="Which benchmark to run", required=True)
+@click.option(
+    "--folder", type=str, help="Folder to Wasm binaries to run", required=True
+)
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-def measure(engine, runs, benchmark, verbose):
-    global benchmarks, measurements
-
+def measure(engine, runs, folder, verbose):
     assert (
         engine == "wasmtime" or engine == "node"
     ), "Expected wasmtime or node runtime."
     assert runs > 0, "Expected at least one run."
-    assert 0 <= benchmark < len(benchmarks), "Expected at least one run."
 
-    folder = benchmarks[benchmark][0]
-    description = benchmarks[benchmark][1]
-
+    description = benchmarks_info[folder.strip()]
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
     print(f"Running {description}, avg. of {runs} runs in {engine}.")
 
@@ -73,7 +94,7 @@ def measure(engine, runs, benchmark, verbose):
                 res = single_run_node(folder, program, verbose)
 
             if engine == "wasmtime":
-                assert False, "TODO"
+                res = single_run_wasmtime(folder, program, verbose)
 
             assert res is not None, "No value returned."
             values.append(res)
