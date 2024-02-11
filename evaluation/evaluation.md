@@ -5,10 +5,10 @@ Evaluation of CertiCoq-Wasm
 
 |      |                |  vs_easy | vs_hard |  sha_fast | binom | comment            | reproduce
 |-----:|:---------------|---------:|--------:|----------:|------:|:-------------------|----------
-|    C | (gcc -O2)      |     7 ms |   44 ms |     35 ms |  6 ms | CPS (in CoqPL'24)  | [cps-ccomp](https://github.com/womeier/certicoqwasm/tree/eval-ccomp) with Makefile[gcc/ccomp]
-|    C | (CompCert -O2) |    10 ms |   59 ms |     43 ms | 16 ms | CPS (in CoqPL'24)  | [cps-ccomp](https://github.com/womeier/certicoqwasm/tree/eval-ccomp)
-| Wasm | (Node.js)      |    81 ms |  700 ms |    190 ms | 13 ms | CPS (in CoqPL'24)  | [cps-Wasm](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-feb-01-24)
-| Wasm | (Node.js)      |    31 ms |  101 ms |     71 ms | 21 ms | non-CPS, WasmCert tail calls | [non-cps-Wasm](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-feb-07-24)
+|    C | (gcc -O2)      |     7 ms |   44 ms |     35 ms |  6 ms | CPS (in CoqPL'24)  | [code](https://github.com/womeier/certicoqwasm/tree/eval-ccomp) with Makefile[gcc/ccomp]
+|    C | (CompCert -O2) |    10 ms |   59 ms |     43 ms | 16 ms | CPS (in CoqPL'24)  | [code](https://github.com/womeier/certicoqwasm/tree/eval-ccomp)
+| Wasm | (Node.js)      |    81 ms |  700 ms |    190 ms | 13 ms | CPS (in CoqPL'24)  | [code](https://github.com/womeier/certicoqwasm/commit/1518307d8e6897fdd9d43c73d381ab4b9fe37e90), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-feb-01-24)
+| Wasm | (Node.js)      |    31 ms |  101 ms |     71 ms | 21 ms | non-CPS, WasmCert tail calls | [code](https://github.com/womeier/certicoqwasm/commit/cdf266a2a5998a4e269a1fd25147a39c430cd502), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-feb-07-24)
 
 
 TODO
