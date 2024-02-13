@@ -19,13 +19,15 @@ Evaluation of CertiCoq-Wasm
 | Wasm | (Node.js)      |    74 ms |  620 ms |    197 ms | 11 ms | CPS, 0ary fast  | [code](https://github.com/womeier/certicoqwasm/commit/6cf5c81f), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-0aryfast-feb-13-24)
 
 
-TODO
+#### Binaryen -O2 vs. no optimizations
+|      |                |  vs_easy | vs_hard |  sha_fast | binom | comment            | reproduce
+|-----:|:---------------|---------:|--------:|----------:|------:|:-------------------|----------
+| Wasm | (Node.js)      |    31 ms |   98 ms |     72 ms | 10 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above) | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
+| Wasm | (Node.js)      |    31 ms |   98 ms |     72 ms | 10 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above), binaryen -O2 | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
 
-| Wasm | (Node.js opt -O2)      |  TODO  | TODO   |  TODO   | TODO  | CPS, binaryen -O2 [cps-binaryen-Wasm](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-feb-01-24)
-| Wasm | (Node.js)      |    75 ms |  550 ms |   TODO ms | 11 ms | CPS, 0ary constr. unboxed
-
-TODO
-Wasm | (Node.js)              |  TODO ms | TODO ms  |   TODO ms | TODO    % non-CPS, 0ary constr. unboxed
-
-Wasm | (wasmtime)     |   ms     |  ms   |   ms    |  ms   % CPS, new
-Wasm | (wasmtime)     |   ms     |  ms   |   ms    |  ms   % non-CPS, new
+TODO:
+- wasmtime
+- emscripten
+- rust, concert
+- more benchmarks
+- instantiation: binaryen optimization -O2 reduces instantiation time drastically
