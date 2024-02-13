@@ -14,6 +14,7 @@ benchmarks_info = {
     "./binaries/cps-feb-01-24/": "CPS",
     "./binaries/non-cps-PROPER-feb-07-24/": "NON-CPS, WasmCert tailcalls",
     "./binaries/non-cps-BAD-feb-06-24/": "NON-CPS, only normal tailcalls",
+    "./binaries/non-cps-PROPER-0aryfast-feb-13-24/": "NON-CPS, WasmCert tailcalls, unboxed 0ary constr",
 }
 
 measurements = ["time_instantiate", "time_main", "time_pp"]
