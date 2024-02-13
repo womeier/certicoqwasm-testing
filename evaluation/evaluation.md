@@ -19,11 +19,11 @@ Evaluation of CertiCoq-Wasm
 | Wasm | (Node.js)      |    74 ms |  620 ms |    197 ms | 11 ms | CPS, 0ary fast  | [code](https://github.com/womeier/certicoqwasm/commit/6cf5c81f), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-0aryfast-feb-13-24)
 
 
-#### Binaryen -O2 vs. no optimizations
+#### Binaryen -O2 vs. no optimizations (binaryen version 108)
 |      |                |  vs_easy | vs_hard |  sha_fast | binom | comment            | reproduce
 |-----:|:---------------|---------:|--------:|----------:|------:|:-------------------|----------
 | Wasm | (Node.js)      |    31 ms |   98 ms |     72 ms | 10 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above) | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
-| Wasm | (Node.js)      |    31 ms |   98 ms |     72 ms | 10 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above), binaryen -O2 | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
+| Wasm | (Node.js)      |    26 ms |   84 ms |     57 ms | 7 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above), binaryen -O2 | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
 
 TODO:
 - wasmtime
