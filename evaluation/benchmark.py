@@ -4,13 +4,13 @@ import os
 import click
 import subprocess
 import json
+from tqdm import tqdm
 
 CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
 
 
 benchmarks_info = {
-    "./binaries/cps-binaryen-O2-feb-01-24/": "CPS + binaryen -O2",
     "./binaries/cps-feb-01-24/": "CPS",
     "./binaries/non-cps-PROPER-feb-07-24/": "NON-CPS, WasmCert tailcalls",
     "./binaries/non-cps-BAD-feb-06-24/": "NON-CPS, only normal tailcalls",
@@ -19,6 +19,26 @@ benchmarks_info = {
 }
 
 measurements = ["time_instantiate", "time_main", "time_pp"]
+
+
+def create_optimized_programs(folder):
+    print(f"Creating programs optimized with binaryen -O2 in {folder}.")
+    programs = open(f"{folder}/TESTS").read().strip().split("\n")
+    for program in tqdm(programs):
+        orig = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+        opt = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}-opt.wasm")
+        if not os.path.exists(opt):
+            subprocess.run(
+                [
+                    "wasm-opt",
+                    "-O2",
+                    "--enable-tail-call",
+                    "--enable-mutable-globals",
+                    orig,
+                    "--output",
+                    opt,
+                ]
+            )
 
 
 def single_run_node(folder, program, verbose):
@@ -76,8 +96,11 @@ def single_run_wasmtime(folder, program, verbose):
 @click.option(
     "--folder", type=str, help="Folder to Wasm binaries to run", required=True
 )
+@click.option(
+    "--optimize", is_flag=True, help="Uses binaryen optimizations", default=False
+)
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-def measure(engine, runs, folder, verbose):
+def measure(engine, runs, folder, verbose, optimize):
     assert (
         engine == "wasmtime" or engine == "node"
     ), "Expected wasmtime or node runtime."
@@ -88,6 +111,14 @@ def measure(engine, runs, folder, verbose):
     print(f"Running {description}, avg. of {runs} runs in {engine}.")
 
     for program in programs:
+        if optimize:
+            program = f"{program}-opt"
+            path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
+            if not os.path.exists(path):
+                print("Didn't find optimized binaries.")
+                create_optimized_programs(folder)
+                print("Done. Please run again.")
+                exit()
 
         values = []
         for run in range(runs):
