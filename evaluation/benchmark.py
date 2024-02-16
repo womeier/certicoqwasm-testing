@@ -107,7 +107,8 @@ def measure(engine, runs, folder, verbose, optimize):
 
     description = benchmarks_info[folder.strip()]
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
-    print(f"Running {description}, avg. of {runs} runs in {engine}.")
+    opt_desc = f"(-O{optimize})" if optimize > 0 else ""
+    print(f"Running {description} {opt_desc}, avg. of {runs} runs in {engine}.")
 
     for program in programs:
         if optimize > 0:
