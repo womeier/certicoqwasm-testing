@@ -2,10 +2,9 @@ all: foo_run
 
 foo.wasm:
 	ulimit -s unlimited && coqc test.v
-	wasm2wat --no-check foo.wasm > foo.wat
-	cat foo.wat | tqdm --bytes | ./insert_tailcalls_stream.py > foo-tail.wat
-#	@python3 ./insert_tailcalls.py --path_in foo.wat --path_out foo-tail.wat
-	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
+#	wasm2wat --no-check foo.wasm > foo.wat
+#	cat foo.wat | tqdm --bytes | ./insert_tailcalls_stream.py > foo-tail.wat
+#	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
 
 foo_run: clean foo.wasm
 	node --experimental-wasm-return_call foo.js
@@ -23,10 +22,9 @@ foo_check: clean foo.wasm
 sha.wasm: sha256.vo
 	rm -f sha.wat sha.wasm
 	ulimit -s unlimited && coqc test_sha.v
-	wasm2wat --no-check sha.wasm > sha.wat
-# @python3 ./insert_tailcalls.py --path_in sha.wat --path_out sha_tail.wat
-	cat sha.wat | tqdm --bytes | ./insert_tailcalls_stream.py > sha-tail.wat
-	wat2wasm --enable-tail-call sha-tail.wat -o sha.wasm
+#	wasm2wat --no-check sha.wasm > sha.wat
+#	cat sha.wat | tqdm --bytes | ./insert_tailcalls_stream.py > sha-tail.wat
+#	wat2wasm --enable-tail-call sha-tail.wat -o sha.wasm
 
 sha_opt.wasm: sha.wasm
 	wasm-opt -O2 --enable-tail-call --enable-mutable-globals sha.wasm --output sha_opt.wasm
