@@ -10,16 +10,24 @@ CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
 
 
-benchmarks_info = {
-    "./binaries/cps-feb-01-24/": "CPS, inserted tailcalls, naive 0ary",
-    "./binaries/non-cps-PROPER-feb-07-24/": "non-CPS, naive 0ary",
-    "./binaries/non-cps-BAD-feb-06-24/": "non-CPS, no Wasm tailcalls, naive 0ary",
-    "./binaries/non-cps-PROPER-0aryfast-feb-13-24/": "non-CPS, WasmCert tailcalls",
-    "./binaries/non-cps-PROPER-0aryfast-return-feb-20-24/": "non-CPS, with return instr",
-    "./binaries/cps-0aryfast-feb-13-24/": "CPS, inserted tailcalls",
-}
-
 measurements = ["time_instantiate", "time_main", "time_pp"]
+
+def get_info(path):
+    if path[-1] == "/":
+        path = path[:-1]
+    if path[0:2] == "./":
+        path = path[2:]
+
+    benchmarks_info = {
+        "binaries/cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary",
+        "binaries/non-cps-PROPER-feb-07-24": "non-CPS, naive 0ary",
+        "binaries/non-cps-BAD-feb-06-24": "non-CPS, no Wasm tailcalls, naive 0ary",
+        "binaries/non-cps-PROPER-0aryfast-feb-13-24": "non-CPS, WasmCert tailcalls",
+        "binaries/non-cps-PROPER-0aryfast-return-feb-20-24": "non-CPS, with return instr",
+        "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls",
+    }
+
+    return benchmarks_info.get(path, "DIDN'T FIND DESCRIPTION")
 
 
 def create_optimized_programs(folder, flag):
@@ -105,7 +113,7 @@ def measure(engine, runs, folder, verbose, optimize_flag):
     ), "Expected wasmtime or node runtime."
     assert runs > 0, "Expected at least one run."
 
-    description = benchmarks_info.get(folder.strip(), "DIDN'T FIND DESCRIPTION")
+    description = get_info(folder.strip())
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
     opt_desc = f"({optimize_flag})" if optimize_flag is not None else ""
     print(f"Running {description} {opt_desc}, avg. of {runs} runs in {engine}.")
