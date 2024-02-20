@@ -11,11 +11,12 @@ os.chdir(CWD)
 
 
 benchmarks_info = {
-    "./binaries/cps-feb-01-24/": "CPS",
-    "./binaries/non-cps-PROPER-feb-07-24/": "NON-CPS, WasmCert tailcalls",
-    "./binaries/non-cps-BAD-feb-06-24/": "NON-CPS, only normal tailcalls",
-    "./binaries/non-cps-PROPER-0aryfast-feb-13-24/": "NON-CPS, WasmCert tailcalls, unboxed 0ary constr",
-    "./binaries/cps-0aryfast-feb-13-24/": "CPS, tailcalls, unboxed 0ary constr",
+    "./binaries/cps-feb-01-24/": "CPS, inserted tailcalls, naive 0ary",
+    "./binaries/non-cps-PROPER-feb-07-24/": "non-CPS, naive 0ary",
+    "./binaries/non-cps-BAD-feb-06-24/": "non-CPS, no Wasm tailcalls, naive 0ary",
+    "./binaries/non-cps-PROPER-0aryfast-feb-13-24/": "non-CPS, WasmCert tailcalls",
+    "./binaries/non-cps-PROPER-0aryfast-return-feb-20-24/": "non-CPS, with return instr",
+    "./binaries/cps-0aryfast-feb-13-24/": "CPS, inserted tailcalls",
 }
 
 measurements = ["time_instantiate", "time_main", "time_pp"]

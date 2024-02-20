@@ -3,7 +3,7 @@ import os
 import subprocess
 from tqdm import tqdm
 
-folders = os.listdir("./binaries/")
+folders = list(filter(lambda x: x != "clean.py", os.listdir("./binaries/")))
 programs = ["binom", "sha_fast", "vs_easy", "vs_hard"]
 
 
