@@ -4,19 +4,52 @@ import os
 import click
 import subprocess
 import json
+from tqdm import tqdm
 
 CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
 
 
-benchmarks_info = {
-    "./binaries/cps-binaryen-O2-feb-01-24/": "CPS + binaryen -O2",
-    "./binaries/cps-feb-01-24/": "CPS",
-    "./binaries/non-cps-PROPER-feb-07-24/": "NON-CPS, WasmCert tailcalls",
-    "./binaries/non-cps-BAD-feb-06-24/": "NON-CPS, only normal tailcalls",
-}
-
 measurements = ["time_instantiate", "time_main", "time_pp"]
+
+def get_info(path):
+    if path[-1] == "/":
+        path = path[:-1]
+    if path[0:2] == "./":
+        path = path[2:]
+
+    benchmarks_info = {
+        "binaries/cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary",
+        "binaries/non-cps-PROPER-feb-07-24": "non-CPS, naive 0ary",
+        "binaries/non-cps-BAD-feb-06-24": "non-CPS, no Wasm tailcalls, naive 0ary",
+        "binaries/non-cps-PROPER-0aryfast-feb-13-24": "non-CPS, WasmCert tailcalls",
+        "binaries/non-cps-PROPER-0aryfast-return-feb-20-24": "non-CPS, with return instr",
+        "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls",
+    }
+
+    return benchmarks_info.get(path, "DIDN'T FIND DESCRIPTION")
+
+
+def create_optimized_programs(folder, flag):
+    print(f"Creating programs optimized with binaryen {flag} in {folder}.")
+    programs = open(f"{folder}/TESTS").read().strip().split("\n")
+    for program in tqdm(programs):
+        orig = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+        opt = os.path.join(
+            folder, f"CertiCoq.Benchmarks.tests.{program}-opt-{flag}.wasm"
+        )
+        if not os.path.exists(opt):
+            subprocess.run(
+                [
+                    "wasm-opt",
+                    f"{flag}",
+                    "--enable-tail-call",
+                    "--enable-mutable-globals",
+                    orig,
+                    "--output",
+                    opt,
+                ]
+            )
 
 
 def single_run_node(folder, program, verbose):
@@ -69,23 +102,31 @@ def single_run_wasmtime(folder, program, verbose):
 
 
 @click.command()
-@click.option("--engine", type=str, help="Wasm engine", required=True)
+@click.option("--engine", type=str, help="Wasm engine", default="node")
 @click.option("--runs", type=int, help="Number of runs", default=10)
-@click.option(
-    "--folder", type=str, help="Folder to Wasm binaries to run", required=True
-)
+@click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
+@click.option("--optimize_flag", type=str , help="Binaryen optimizations flag")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-def measure(engine, runs, folder, verbose):
+def measure(engine, runs, folder, verbose, optimize_flag):
     assert (
         engine == "wasmtime" or engine == "node"
     ), "Expected wasmtime or node runtime."
     assert runs > 0, "Expected at least one run."
 
-    description = benchmarks_info[folder.strip()]
+    description = get_info(folder.strip())
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
-    print(f"Running {description}, avg. of {runs} runs in {engine}.")
+    opt_desc = f"({optimize_flag})" if optimize_flag is not None else ""
+    print(f"Running {description} {opt_desc}, avg. of {runs} runs in {engine}.")
 
     for program in programs:
+        if optimize_flag is not None:
+            program = f"{program}-opt-{optimize_flag}"
+            path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
+            if not os.path.exists(path):
+                print("Didn't find optimized binaries.")
+                create_optimized_programs(folder, flag=optimize_flag)
+                print("Done. Please run again.")
+                exit()
 
         values = []
         for run in range(runs):
