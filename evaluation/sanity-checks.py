@@ -14,6 +14,9 @@ hashes = []
 for prog in programs:
     for folder in folders:
         file = f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{prog}.wasm"
+        if not os.path.exists(file):
+            print(f"Didn't find {file}.")
+            exit(1)
         p = subprocess.run(["sha256sum", file], capture_output=True)
         hashes.append((p.stdout.decode("utf-8").split(" ")[0], file))
 
