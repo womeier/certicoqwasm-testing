@@ -25,6 +25,7 @@ def get_info(path):
         "binaries/non-cps-PROPER-0aryfast-feb-13-24": "non-CPS, WasmCert tailcalls",
         "binaries/non-cps-PROPER-0aryfast-return-feb-20-24": "non-CPS, with return instr",
         "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls",
+        "binaries/non-cps-PROPER-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary (final, feb-26-24)"
     }
 
     return benchmarks_info.get(path, "DIDN'T FIND DESCRIPTION")
