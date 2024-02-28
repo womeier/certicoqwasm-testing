@@ -6,9 +6,9 @@ all: foo_run
 
 foo.wasm:
 	ulimit -s $(STACKSIZE) && coqc test.v
-	wasm2wat --no-check --enable-tail-call foo.wasm > foo.wat
-	cat foo.wat | tqdm --bytes | ./insert_tailcalls.py > foo-tail.wat
-	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
+#	wasm2wat --no-check --enable-tail-call foo.wasm > foo.wat
+#	cat foo.wat | tqdm --bytes | ./insert_tailcalls.py > foo-tail.wat
+#	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
 
 foo_run: clean foo.wasm
 	node --experimental-wasm-return_call foo.js
