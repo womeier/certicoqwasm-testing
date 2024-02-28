@@ -13,7 +13,8 @@ See [here](./evaluation/evaluation.md) for some performance comparisons.
 5) Provide sha of version to include in `./evaluation/evaluation.md`
 6) Run the `./evaluation/sanity-checks.py` script.
 
-Wasmtime requires installation of wasmtime and wasmtime-py including this [PR](https://github.com/bytecodealliance/wasmtime-py/pull/205).
+Wasmtime requires installation of wasmtime and wasmtime-py.
+`pip install "wasmtime>=18.0.0"`
 
 ### Checking result of CertiCoq wasm backend
 Run `make sha` to export the computation of a sha256 sum (taken from A.W. Appel) to wasm and run it with nodejs.
