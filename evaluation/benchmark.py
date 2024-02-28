@@ -10,7 +10,8 @@ CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
 
 
-measurements = ["time_instantiate", "time_main", "time_pp"]
+measurements = ["time_startup", "time_main", "time_pp"]
+
 
 def get_info(path):
     if path[-1] == "/":
@@ -25,7 +26,7 @@ def get_info(path):
         "binaries/non-cps-PROPER-0aryfast-feb-13-24": "non-CPS, WasmCert tailcalls",
         "binaries/non-cps-PROPER-0aryfast-return-feb-20-24": "non-CPS, with return instr",
         "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls",
-        "binaries/non-cps-PROPER-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary (final, feb-26-24)"
+        "binaries/non-cps-PROPER-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary, hand-optimized instr",
     }
 
     return benchmarks_info.get(path, "DIDN'T FIND DESCRIPTION")
@@ -106,7 +107,7 @@ def single_run_wasmtime(folder, program, verbose):
 @click.option("--engine", type=str, help="Wasm engine", default="node")
 @click.option("--runs", type=int, help="Number of runs", default=10)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
-@click.option("--optimize_flag", type=str , help="Binaryen optimizations flag")
+@click.option("--optimize_flag", type=str, help="Binaryen optimizations flag")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
 def measure(engine, runs, folder, verbose, optimize_flag):
     assert (
@@ -149,15 +150,13 @@ def measure(engine, runs, folder, verbose, optimize_flag):
             for meas in measurements:
                 result[meas].append(int(val[meas]))
 
-        time_instantiate = int(
-            sum(result["time_instantiate"]) / len(result["time_instantiate"])
-        )
+        time_startup = int(sum(result["time_startup"]) / len(result["time_startup"]))
         time_main = int(sum(result["time_main"]) / len(result["time_main"]))
         time_pp = int(sum(result["time_pp"]) / len(result["time_pp"]))
         print(
             f"{description} / avg of {runs} runs / {program}\t: "
-            f"instantiation: {time_instantiate}, main: {time_main}, pp: {time_pp}, "
-            f" sum: {time_instantiate + time_main + time_pp}"
+            f"startup: {time_startup}, main: {time_main}, pp: {time_pp}, "
+            f" sum: {time_startup+ time_main + time_pp}"
         )
 
 

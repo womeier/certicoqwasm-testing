@@ -1,13 +1,15 @@
+const fs = require('fs');
+
 var args = process.argv.slice(2);
 if (args.length != 2) {
     console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
+    console.log("e.g.: $ node --experimental-wasm-return_call run-wasm.js ./binaries/cps-0aryfast-feb-13-24 vs_easy");
     process.exit(1);
 }
 path = args[0];
-program = args[1];
+if (path.charAt(path.length - 1) != "/") { path = path + "/" }
 
-const fs = require('fs');
-const bytes = fs.readFileSync(path + `./CertiCoq.Benchmarks.tests.${program}.wasm`);
+program = args[1];
 
 function write_int (value) {
     process.stdout.write(value.toString())
@@ -23,20 +25,17 @@ let importObject = {
         $write_char: write_char,
         $write_int: write_int,
     }
-/*    env: {
-        import_i32: 5_000_000_000, // _ is ignored in numbers in JS and WAT
-        import_f32: 123.0123456789,
-        import_f64: 123.0123456789,
-    } */
 };
 
 (async () => {
-    const start_inst = Date.now();
+    const start_startup = Date.now();
+    const bytes = fs.readFileSync(path + `CertiCoq.Benchmarks.tests.${program}.wasm`);
+
     const obj = await WebAssembly.instantiate(
         new Uint8Array (bytes), importObject
     );
-    const stop_inst = Date.now();
-    const time_inst = stop_inst - start_inst;
+    const stop_startup = Date.now();
+    const time_startup = stop_startup - start_startup;
 
     try {
         const start_main = Date.now();
@@ -52,7 +51,7 @@ let importObject = {
             process.exit(1);
         } else {
             const res_value = obj.instance.exports.result.value;
-            process.stdout.write("\n====>");
+            process.stdout.write("====>");
 
             const start_pp = Date.now();
             obj.instance.exports.$pretty_print_constructor(res_value); console.log(""); // newline
@@ -60,7 +59,7 @@ let importObject = {
             time_pp = stop_pp - start_pp;
         }
 
-        console.log(`Benchmark ${path}: {{"time_instantiate": "${time_inst}", "time_main": "${time_main}", "time_pp": "${time_pp}", "program": "${program}"}} ms.`);
+        console.log(`Benchmark ${path}: {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": "${time_pp}", "program": "${program}"}} ms.`);
     } catch (error) {
         console.log(error);
         process.exit(1);

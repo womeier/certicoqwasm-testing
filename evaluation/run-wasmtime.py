@@ -13,15 +13,6 @@ program = sys.argv[2]
 config = Config()
 config.wasm_tail_call = True
 
-# Shared amongst objects
-store = Store(Engine(config))
-
-# Here we can compile a `Module` which is then ready for instantiation
-# afterwards
-module = Module.from_file(
-    store.engine, os.path.join(path, f"CertiCoq.Benchmarks.tests.{program}.wasm")
-)
-
 
 # Our module needs two imports
 def print_int(n):
@@ -32,16 +23,22 @@ def print_char(n):
     sys.stdout.write(str(chr(n)))
 
 
+# Shared amongst objects
+store = Store(Engine(config))
 print_char_stdout = Func(store, FuncType([ValType.i32()], []), print_char)
 print_int_stdout = Func(store, FuncType([ValType.i32()], []), print_int)
 
+# Here we compile a `Module` which is then ready for instantiation
+start_startup = time.time()
+module = Module.from_file(
+    store.engine, os.path.join(path, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+)
+
 # instantiate module
-start_inst = time.time()
 instance = Instance(store, module, [print_char_stdout, print_int_stdout])
-# intention: force instantiation, doesn't seem to work, time_inst is 0
-_ = instance.exports(store)["bytes_used"].value(store)
-stop_inst = time.time()
-time_inst = int((stop_inst - start_inst) * 1000)
+
+stop_startup = time.time()
+time_startup = int((stop_startup - start_startup) * 1000)
 
 # run main
 start_main = time.time()
@@ -63,6 +60,6 @@ print()
 print(
     f"Benchmark {path}:"
     + "{{"
-    + f'"time_instantiate": "{time_inst}", "time_main": "{time_main}", "time_pp": "{time_pp}"'
+    + f'"time_startup": "{time_startup}", "time_main": "{time_main}", "time_pp": "{time_pp}"'
     + "}} ms."
 )
