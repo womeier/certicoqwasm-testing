@@ -6,9 +6,9 @@ all: foo_run
 
 foo.wasm:
 	ulimit -s $(STACKSIZE) && coqc test.v
-#	wasm2wat --no-check foo.wasm > foo.wat
-#	cat foo.wat | tqdm --bytes | ./insert_tailcalls_stream.py > foo-tail.wat
-#	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
+	wasm2wat --no-check --enable-tail-call foo.wasm > foo.wat
+	cat foo.wat | tqdm --bytes | ./insert_tailcalls.py > foo-tail.wat
+	wat2wasm --enable-tail-call foo-tail.wat -o foo.wasm
 
 foo_run: clean foo.wasm
 	node --experimental-wasm-return_call foo.js
@@ -26,8 +26,8 @@ foo_check: clean foo.wasm
 sha.wasm: sha256.vo
 	rm -f sha.wat sha.wasm
 	ulimit -s $(STACKSIZE) && coqc test_sha.v
-#	wasm2wat --no-check sha.wasm > sha.wat
-#	cat sha.wat | tqdm --bytes | ./insert_tailcalls_stream.py > sha-tail.wat
+#	wasm2wat --no-check --enable-tail-call sha.wasm > sha.wat
+#	cat sha.wat | tqdm --bytes | ./insert_tailcalls.py > sha-tail.wat
 #	wat2wasm --enable-tail-call sha-tail.wat -o sha.wasm
 
 sha_opt.wasm: sha.wasm
