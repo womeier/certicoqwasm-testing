@@ -16,19 +16,20 @@ From Wasm Require Import datatypes pp.
 
 From CertiCoq Require Import LambdaANF.toplevel Common.Common Common.compM Common.Pipeline_utils.
 Require Import ExtLib.Structures.Monad.
-From MetaCoq.Template Require Import bytestring MCString.
+From MetaCoq.Utils Require Import bytestring MCString.
 From Coq Require Import ZArith List.
 
-From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show CodegenWASM.wasm_map_util CodegenWASM.LambdaANF_to_WASM.
+From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show CodegenWasm.LambdaANF_to_Wasm.
 Import MonadNotation.
 
 From Coq.Strings Require Import Byte.
 
 From Wasm Require Import binary_format_parser binary_format_printer host
-                         datatypes_properties check_toks instantiation.
+                         datatypes_properties check_toks instantiation_func instantiation_spec.
 
 From mathcomp Require Import eqtype.
 
+From mathcomp Require Import seq.
 
 Module TestModule.
 
@@ -37,14 +38,11 @@ Let store_record := store_record host_function.
 Let function_closure := function_closure host_function.
 
 
-Let external_type_checker := external_type_checker host_function.
-
 Definition test_bytes : list Byte.byte := x00 :: x61 :: x73 :: x6d :: x01 :: x00 :: x00 :: x00 :: x01 :: x07 :: x01 :: x60 :: x02 :: x7f :: x7f :: x01 :: x7f :: x03 :: x02 :: x01 :: x00 :: x07 :: x0b :: x01 :: x07 :: x61 :: x64 :: x64 :: x5f :: x69 :: x33 :: x32 :: x00 :: x00 :: x0a :: x09 :: x01 :: x07 :: x00 :: x20 :: x00 :: x20 :: x01 :: x6a :: x0b :: nil.
 
 Definition test_module_opt : option module := run_parse_module test_bytes.
 Compute test_module_opt.
 
-From mathcomp Require Import seq.
 
 Definition test_module := {|
   mod_types := [:: Tf [:: T_i32; T_i32] [:: T_i32]; Tf [] []];
@@ -112,15 +110,14 @@ Let host := host host_function.
 
 Variable host_instance : host.
 
-Let external_type_checker := external_type_checker host_function.
 Let interp_alloc_module := interp_alloc_module host_function.
 Let check_bounds_elem := check_bounds_elem host_function.
 Let check_bounds_data := check_bounds_data host_function.
 Let init_tabs := init_tabs host_function.
 Let init_mems := init_mems host_function.
-Let lookup_exported_function := lookup_exported_function host_function.
 
-Definition extract_const g := match g.(modglob_init) with (* guarantee non-divergence during instantiation *)
+(* guarantee non-divergence during instantiation, only allow const *)
+Definition extract_const g := match g.(modglob_init) with
 | [:: BI_const c] => Ret c
 | _ => Err "only constants allowed during instantiation"%bs
 end : error value.

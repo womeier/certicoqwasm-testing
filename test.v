@@ -47,8 +47,8 @@ Definition foo := fold_left andb (map odd (cons 1 (cons 2 (cons 3 (cons 4 (cons 
 (* Definition foo := fold_left andb (map odd [1; 3; 5; 8]) true.*)
 
 CertiCoq Show IR -cps -file "foo" foo.
-CertiCoq Generate WASM -cps -file "foo" foo.
+CertiCoq Compile Wasm -cps -file "foo" foo.
 
 (* CertiCoq Show IR -cps -file "foo" foo. *)
-(* CertiCoq Generate WASM -cps -file "foo" foo. *)
+(* CertiCoq Compile Wasm -cps -file "foo" foo. *)
 (* CertiCoq Compile -file "foo" foo. *)

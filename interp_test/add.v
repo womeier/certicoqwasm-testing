@@ -20,7 +20,7 @@ Unset Universe Checking.
 (* From MetaCoq.Utils Require Import bytestring MCString. *)
 From Coq Require Import ZArith List.
 
-(* From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show CodegenWASM.LambdaANF_to_WASM. *)
+(* From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show CodegenWasm.LambdaANF_to_Wasm. *)
 Require Import ExtLib.Structures.Monad.
 Import MonadNotation.
 
@@ -130,20 +130,18 @@ Definition initial_store : store_record := {|
   |}.
 
 (** The lemmas [r_eliml] and [r_elimr] are the fundamental framing lemmas.
-  They enable to focus on parts of the stack, ignoring the context. **)
-
-Lemma r_eliml: forall hs s f es hs' s' f' es' lconst,
+  They enable to focus on parts of the stack, ignoring the context.
+  They are kept for compatability for now, TODO rework (use new context representation) **)
+Lemma r_eliml : forall hs s f es hs' s' f' es' lconst,
   const_list lconst ->
   reduce (host_instance := host_instance) hs s f es hs' s' f' es' ->
   reduce hs s f (lconst ++ es) hs' s' f' (lconst ++ es').
 Proof.
   move => hs s f es hs' s' f' es' lconst HConst H.
-  apply: r_label; try apply/lfilledP.
-  - by apply: H.
-  - replace (lconst++es) with (lconst++es++[::]); first by apply: LfilledBase.
-    f_equal. by apply: cats0.
-  - replace (lconst++es') with (lconst++es'++[::]); first by apply: LfilledBase.
-    f_equal. by apply: cats0.
+  apply const_es_exists in HConst. destruct HConst as [vs ?].
+  eapply r_label with (lh:=LH_base vs []). eassumption.
+  - cbn. rewrite cats0. congruence.
+  - cbn. rewrite cats0. congruence.
 Qed.
 
 Lemma r_elimr: forall hs s f es hs' s' f' es' les,
@@ -151,10 +149,7 @@ Lemma r_elimr: forall hs s f es hs' s' f' es' les,
     reduce hs s f (es ++ les) hs' s' f' (es' ++ les).
 Proof.
   move => hs s f es hs' s' f' es' les H.
-  apply: r_label; try apply/lfilledP.
-  - apply: H.
-  - replace (es++les) with ([::]++es++les) => //. by apply: LfilledBase.
-  - replace (es'++les) with ([::]++es'++les) => //. by apply: LfilledBase.
+  eapply r_label with (lh:=LH_base [] les); eauto.
 Qed.
 
 Ltac separate_instr :=

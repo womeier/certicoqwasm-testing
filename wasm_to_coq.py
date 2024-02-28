@@ -18,7 +18,7 @@ def b2s(b):
     return "x" + x
 
 
-preamble = """ 
+preamble = """
 Unset Universe Checking.
 
 From Coq Require Import String.
@@ -26,7 +26,7 @@ From Coq Require Import ZArith List.
 From Coq.Strings Require Import Byte.
 
 From CertiCoq Require Import LambdaANF.toplevel Common.Common Common.compM Common.Pipeline_utils.
-From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show CodegenWASM.wasm_map_util.
+From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show.
 From MetaCoq.Template Require Import bytestring MCString.
 
 Require Import ExtLib.Structures.Monad.
