@@ -5,6 +5,7 @@ import click
 import subprocess
 import json
 from tqdm import tqdm
+import time
 
 CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
@@ -28,8 +29,14 @@ def get_info(path):
         "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls",
         "binaries/non-cps-PROPER-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary, hand-optimized instr",
     }
+    try:
+        info = benchmarks_info[path]
+    except KeyError:
+        print("Running new binaries. Did you run MAKE INSTALL?\n")
+        time.sleep(1)
+        info = "DIDN'T FIND DESCRIPTION"
 
-    return benchmarks_info.get(path, "DIDN'T FIND DESCRIPTION")
+    return info
 
 
 def create_optimized_programs(folder, flag):
