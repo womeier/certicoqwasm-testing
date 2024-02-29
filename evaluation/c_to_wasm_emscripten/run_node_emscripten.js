@@ -12,10 +12,21 @@
 // after the generated code, you will need to define   var Module = {};
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
-const { performance } = require('perf_hooks');
+
+var args = process.argv.slice(2);
+if (args.length != 2) {
+    console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
+    process.exit(1);
+}
+path = args[0];
+
+if (path.charAt(path.length - 1) != "/") { path = path + "/" }
+
+program = args[1];
+
 var Module = typeof Module != 'undefined' ? Module : {};
 
-var time_inst;
+var time_startup;
 var time_main;
 
 // --pre-jses are emitted after the Module integration code, so that they can
@@ -46,14 +57,6 @@ var ENVIRONMENT_IS_WORKER = typeof importScripts == 'function';
 var ENVIRONMENT_IS_NODE = typeof process == 'object' && typeof process.versions == 'object' && typeof process.versions.node == 'string';
 var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
 
-// `/` should be present at the end if `scriptDirectory` is not empty
-var scriptDirectory = '';
-function locateFile(path) {
-  if (Module['locateFile']) {
-    return Module['locateFile'](path, scriptDirectory);
-  }
-  return scriptDirectory + path;
-}
 
 // Hooks that are implemented differently in different runtime environments.
 var read_,
@@ -81,8 +84,10 @@ if (ENVIRONMENT_IS_NODE) {
 read_ = (filename, binary) => {
   // We need to re-wrap `file://` strings to URLs. Normalizing isn't
   // necessary in that case, the path should already be absolute.
-  filename = isFileURI(filename) ? new URL(filename) : nodePath.normalize(filename);
-  return fs.readFileSync(filename, binary ? undefined : 'utf8');
+    filename = isFileURI(filename) ? new URL(filename) : nodePath.normalize(filename);
+
+    return fs.readFileSync(filename, binary ? undefined : 'utf8');
+
 };
 
 readBinary = (filename) => {
@@ -93,14 +98,6 @@ readBinary = (filename) => {
   return ret;
 };
 
-readAsync = (filename, onload, onerror, binary = true) => {
-  // See the comment in the `read_` function.
-  filename = isFileURI(filename) ? new URL(filename) : nodePath.normalize(filename);
-  fs.readFile(filename, binary ? undefined : 'utf8', (err, data) => {
-    if (err) onerror(err);
-    else onload(binary ? data.buffer : data);
-  });
-};
 // end include: node_shell_read.js
   if (!Module['thisProgram'] && process.argv.length > 1) {
     thisProgram = process.argv[1].replace(/\\/g, '/');
@@ -124,70 +121,7 @@ readAsync = (filename, onload, onerror, binary = true) => {
     throw toThrow;
   };
 
-} else
-
-// Note that this includes Node.js workers when relevant (pthreads is enabled).
-// Node.js workers are detected as a combination of ENVIRONMENT_IS_WORKER and
-// ENVIRONMENT_IS_NODE.
-if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-  if (ENVIRONMENT_IS_WORKER) { // Check worker, not web, since window could be polyfilled
-    scriptDirectory = self.location.href;
-  } else if (typeof document != 'undefined' && document.currentScript) { // web
-    scriptDirectory = document.currentScript.src;
-  }
-  // blob urls look like blob:http://site.com/etc/etc and we cannot infer anything from them.
-  // otherwise, slice off the final part of the url to find the script directory.
-  // if scriptDirectory does not contain a slash, lastIndexOf will return -1,
-  // and scriptDirectory will correctly be replaced with an empty string.
-  // If scriptDirectory contains a query (starting with ?) or a fragment (starting with #),
-  // they are removed because they could contain a slash.
-  if (scriptDirectory.startsWith('blob:')) {
-    scriptDirectory = '';
-  } else {
-    scriptDirectory = scriptDirectory.substr(0, scriptDirectory.replace(/[?#].*/, '').lastIndexOf('/')+1);
-  }
-
-  // Differentiate the Web Worker from the Node Worker case, as reading must
-  // be done differently.
-  {
-// include: web_or_worker_shell_read.js
-read_ = (url) => {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, false);
-    xhr.send(null);
-    return xhr.responseText;
-  }
-
-  if (ENVIRONMENT_IS_WORKER) {
-    readBinary = (url) => {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, false);
-      xhr.responseType = 'arraybuffer';
-      xhr.send(null);
-      return new Uint8Array(/** @type{!ArrayBuffer} */(xhr.response));
-    };
-  }
-
-  readAsync = (url, onload, onerror) => {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = () => {
-      if (xhr.status == 200 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
-        onload(xhr.response);
-        return;
-      }
-      onerror();
-    };
-    xhr.onerror = onerror;
-    xhr.send(null);
-  }
-
-// end include: web_or_worker_shell_read.js
-  }
-} else
-{
-}
+} else {}
 
 var out = Module['print'] || console.log.bind(console);
 var err = Module['printErr'] || console.error.bind(console);
@@ -223,7 +157,7 @@ if (Module['quit']) quit_ = Module['quit'];
 // An online HTML version (which may be of a different version of Emscripten)
 //    is up at http://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html
 
-var wasmBinary; 
+var wasmBinary;
 if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 
 if (typeof WebAssembly != 'object') {
@@ -318,12 +252,12 @@ function preRun() {
 function initRuntime() {
   runtimeInitialized = true;
 
-  
+
   callRuntimeCallbacks(__ATINIT__);
 }
 
 function preMain() {
-  
+
   callRuntimeCallbacks(__ATMAIN__);
 }
 
@@ -464,11 +398,8 @@ var isFileURI = (filename) => filename.startsWith('file://');
 // end include: URIUtils.js
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
-var wasmBinaryFile;
-  wasmBinaryFile = 'vs_hard.wasm';
-  if (!isDataURI(wasmBinaryFile)) {
-    wasmBinaryFile = locateFile(wasmBinaryFile);
-  }
+
+const wasmBinaryFile = path + program + '.wasm';
 
 function getBinarySync(file) {
   if (file == wasmBinaryFile && wasmBinary) {
@@ -480,83 +411,27 @@ function getBinarySync(file) {
   throw 'both async and sync fetching of the wasm failed';
 }
 
-function getBinaryPromise(binaryFile) {
-  // If we don't have the binary yet, try to load it asynchronously.
-  // Fetch has some additional restrictions over XHR, like it can't be used on a file:// url.
-  // See https://github.com/github/fetch/pull/92#issuecomment-140665932
-  // Cordova or Electron apps are typically loaded from a file:// url.
-  // So use fetch if it is available and the url is not a file, otherwise fall back to XHR.
-  if (!wasmBinary
-      && (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER)) {
-    if (typeof fetch == 'function'
-      && !isFileURI(binaryFile)
-    ) {
-      return fetch(binaryFile, { credentials: 'same-origin' }).then((response) => {
-        if (!response['ok']) {
-          throw `failed to load wasm binary file at '${binaryFile}'`;
-        }
-        return response['arrayBuffer']();
-      }).catch(() => getBinarySync(binaryFile));
-    }
-    else if (readAsync) {
-      // fetch is not available or url is file => try XHR (readAsync uses XHR internally)
-      return new Promise((resolve, reject) => {
-        readAsync(binaryFile, (response) => resolve(new Uint8Array(/** @type{!ArrayBuffer} */(response))), reject)
-      });
-    }
-  }
-
-  // Otherwise, getBinarySync should be able to get it synchronously
-  return Promise.resolve().then(() => getBinarySync(binaryFile));
-}
-
 function instantiateArrayBuffer(binaryFile, imports, receiver) {
-    return getBinaryPromise(binaryFile).then((binary) => {
-	const start_inst = performance.now();
-	const obj = WebAssembly.instantiate(binary, imports);
-	const stop_inst = performance.now();
-	time_inst = stop_inst - start_inst;
-	return obj;
-  }).then(receiver, (reason) => {
-    err(`failed to asynchronously prepare wasm: ${reason}`);
 
-    abort(reason);
-  });
+    const start_startup = Date.now();
+
+    const binary = getBinarySync(wasmBinaryFile);
+
+    const obj = WebAssembly.instantiate(binary, imports);
+
+    const stop_startup = Date.now();
+
+    time_startup = stop_startup - start_startup;
+
+    return Promise.resolve(obj)
+	.then(receiver, (reason) => {
+	    err(`failed to asynchronously prepare wasm: ${reason}`);
+
+	    abort(reason);
+	});
 }
 
 function instantiateAsync(binary, binaryFile, imports, callback) {
-  if (!binary &&
-      typeof WebAssembly.instantiateStreaming == 'function' &&
-      !isDataURI(binaryFile) &&
-      // Don't use streaming for file:// delivered objects in a webview, fetch them synchronously.
-      !isFileURI(binaryFile) &&
-      // Avoid instantiateStreaming() on Node.js environment for now, as while
-      // Node.js v18.1.0 implements it, it does not have a full fetch()
-      // implementation yet.
-      //
-      // Reference:
-      //   https://github.com/emscripten-core/emscripten/pull/16917
-      !ENVIRONMENT_IS_NODE &&
-      typeof fetch == 'function') {
-    return fetch(binaryFile, { credentials: 'same-origin' }).then((response) => {
-      // Suppress closure warning here since the upstream definition for
-      // instantiateStreaming only allows Promise<Repsponse> rather than
-      // an actual Response.
-      // TODO(https://github.com/google/closure-compiler/pull/3913): Remove if/when upstream closure is fixed.
-      /** @suppress {checkTypes} */
-      var result = WebAssembly.instantiateStreaming(response, imports);
-
-      return result.then(
-        callback,
-        function(reason) {
-          // We expect the most common failure cause to be a bad MIME type for the binary,
-          // in which case falling back to ArrayBuffer instantiation should work.
-          err(`wasm streaming compile failed: ${reason}`);
-          err('falling back to ArrayBuffer instantiation');
-          return instantiateArrayBuffer(binaryFile, imports, callback);
-        });
-    });
-  }
   return instantiateArrayBuffer(binaryFile, imports, callback);
 }
 
@@ -575,10 +450,10 @@ function createWasm() {
   function receiveInstance(instance, module) {
     wasmExports = instance.exports;
 
-    
+
 
     wasmMemory = wasmExports['memory'];
-    
+
     updateMemoryViews();
 
     addOnInit(wasmExports['__wasm_call_ctors']);
@@ -642,7 +517,7 @@ var tempI64;
       }
     };
 
-  
+
     /**
      * @param {number} ptr
      * @param {string} type
@@ -664,7 +539,7 @@ var tempI64;
 
   var noExitRuntime = Module['noExitRuntime'] || true;
 
-  
+
     /**
      * @param {number} ptr
      * @param {number} value
@@ -686,7 +561,7 @@ var tempI64;
   }
 
   var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder('utf8') : undefined;
-  
+
     /**
      * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
      * array that contains uint8 values, returns a copy of that string as a
@@ -705,7 +580,7 @@ var tempI64;
       // (As a tiny code save trick, compare endPtr against endIdx using a negation,
       // so that undefined means Infinity)
       while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
-  
+
       if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
         return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
       }
@@ -727,7 +602,7 @@ var tempI64;
         } else {
           u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
         }
-  
+
         if (u0 < 0x10000) {
           str += String.fromCharCode(u0);
         } else {
@@ -737,7 +612,7 @@ var tempI64;
       }
       return str;
     };
-  
+
     /**
      * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
      * emscripten HEAP, returns a copy of that string as a Javascript String object.
@@ -764,7 +639,7 @@ var tempI64;
 
   var getHeapMax = () =>
       HEAPU8.length;
-  
+
   var abortOnCannotGrowMemory = (requestedSize) => {
       abort('OOM');
     };
@@ -775,7 +650,7 @@ var tempI64;
       abortOnCannotGrowMemory(requestedSize);
     };
 
-  
+
   var runtimeKeepaliveCounter = 0;
   var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0;
   var _proc_exit = (code) => {
@@ -790,7 +665,7 @@ var tempI64;
   /** @param {boolean|number=} implicit */
   var exitJS = (status, implicit) => {
       EXITSTATUS = status;
-  
+
       _proc_exit(status);
     };
   var _exit = exitJS;
@@ -804,14 +679,14 @@ var tempI64;
     };
   function _fd_seek(fd,offset_low, offset_high,whence,newOffset) {
     var offset = convertI32PairToI53Checked(offset_low, offset_high);;
-  
-    
+
+
       return 70;
     ;
   }
 
   var printCharBuffers = [null,[],[]];
-  
+
   var printChar = (stream, curr) => {
       var buffer = printCharBuffers[stream];
       if (curr === 0 || curr === 10) {
@@ -821,14 +696,14 @@ var tempI64;
         buffer.push(curr);
       }
     };
-  
+
   var flush_NO_FILESYSTEM = () => {
       // flush anything remaining in the buffers during shutdown
       if (printCharBuffers[1].length) printChar(1, 10);
       if (printCharBuffers[2].length) printChar(2, 10);
     };
-  
-  
+
+
   var SYSCALLS = {
   varargs:undefined,
   get() {
@@ -892,13 +767,13 @@ var tempI64;
       }
       return len;
     };
-  
+
   var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
       // Parameter maxBytesToWrite is not optional. Negative values, 0, null,
       // undefined and false each don't write out any bytes.
       if (!(maxBytesToWrite > 0))
         return 0;
-  
+
       var startIdx = outIdx;
       var endIdx = outIdx + maxBytesToWrite - 1; // -1 for string null terminator.
       for (var i = 0; i < str.length; ++i) {
@@ -946,7 +821,68 @@ var tempI64;
       var ret = stackAlloc(size);
       stringToUTF8(str, ret, size);
       return ret;
+  };
+  var getCFunc = (ident) => {
+      var func = Module['_' + ident]; // closure exported function
+      return func;
     };
+
+  var writeArrayToMemory = (array, buffer) => {
+      HEAP8.set(array, buffer);
+    };
+
+
+  var ccall = (ident, returnType, argTypes, args, opts) => {
+      // For fast lookup of conversion functions
+      var toC = {
+        'string': (str) => {
+          var ret = 0;
+          if (str !== null && str !== undefined && str !== 0) { // null string
+            // at most 4 bytes per UTF-8 code point, +1 for the trailing '\0'
+            ret = stringToUTF8OnStack(str);
+          }
+          return ret;
+        },
+        'array': (arr) => {
+          var ret = stackAlloc(arr.length);
+          writeArrayToMemory(arr, ret);
+          return ret;
+        }
+      };
+
+      function convertReturnValue(ret) {
+        if (returnType === 'string') {
+
+          return UTF8ToString(ret);
+        }
+        if (returnType === 'boolean') return Boolean(ret);
+        return ret;
+      }
+
+      var func = getCFunc(ident);
+      var cArgs = [];
+      var stack = 0;
+      if (args) {
+        for (var i = 0; i < args.length; i++) {
+          var converter = toC[argTypes[i]];
+          if (converter) {
+            if (stack === 0) stack = stackSave();
+            cArgs[i] = converter(args[i]);
+          } else {
+            cArgs[i] = args[i];
+          }
+        }
+      }
+      var ret = func(...cArgs);
+      function onDone(ret) {
+        if (stack !== 0) stackRestore(stack);
+        return convertReturnValue(ret);
+      }
+
+      ret = onDone(ret);
+      return ret;
+    };
+
 var wasmImports = {
   /** @export */
   __assert_fail: ___assert_fail,
@@ -964,13 +900,16 @@ var wasmImports = {
   fd_write: _fd_write
 };
 var wasmExports = createWasm();
+
 var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])();
 var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
+var _pp = Module['_pp'] = (a0) => (_pp = Module['_pp'] = wasmExports['pp'])(a0);
 var stackSave = () => (stackSave = wasmExports['stackSave'])();
 var stackRestore = (a0) => (stackRestore = wasmExports['stackRestore'])(a0);
 var stackAlloc = (a0) => (stackAlloc = wasmExports['stackAlloc'])(a0);
 var dynCall_jiji = Module['dynCall_jiji'] = (a0, a1, a2, a3, a4) => (dynCall_jiji = Module['dynCall_jiji'] = wasmExports['dynCall_jiji'])(a0, a1, a2, a3, a4);
 
+Module['ccall'] = ccall;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
@@ -1003,14 +942,22 @@ function callMain(args = []) {
 
   try {
 
-      const start_main = performance.now();  
+      const start_main = Date.now();
       var ret = entryFunction(argc, argv);
-      const stop_main = performance.now();
+      const stop_main = Date.now();
       time_main = stop_main - start_main;
 
-      console.log("Benchmark vs_hard:");
-      console.log(`instantiate time: ${time_inst.toFixed(2)} ms`);
-      console.log(`main time: ${time_main.toFixed(2)} ms`);      
+      const start_pp = Date.now();
+
+      Module.ccall('pp',
+		   'number',
+		   ['number'],
+		   [ret]);
+
+      const stop_pp = Date.now();
+      const time_pp = stop_pp - start_pp;
+
+      console.log(`Benchmark ${path}: {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": "${time_pp}", "program": "${program}"}} ms.`);
 
     // if we're not running an evented main loop, it's time to exit
     exitJS(ret, /* implicit = */ true);
@@ -1036,7 +983,8 @@ function run(args = arguments_) {
 
   function doRun() {
     // run may have just been called through dependencies being fulfilled just in this very frame,
-    // or while the async setStatus time below was happening
+      // or while the async setStatus time below was happening
+
     if (calledRun) return;
     calledRun = true;
     Module['calledRun'] = true;
@@ -1081,6 +1029,5 @@ var shouldRunNow = true;
 if (Module['noInitialRun']) shouldRunNow = false;
 
 run();
-
 
 // end include: postamble.js
