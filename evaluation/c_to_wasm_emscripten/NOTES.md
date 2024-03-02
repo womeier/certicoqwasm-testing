@@ -25,6 +25,6 @@ See `run_node_emscripten.js` (line 952) for how to call the `pp` function (note 
 
 ## Notes
 
-- The above was only tested for the benchmarks `binom`, `vs_easy`, `vs_hard` and `sha_fast`. The version of `sha_fast` was taken from the upstream CertiCoq repository and the glue/ driver code did not print any output.
+- The above was only tested for the benchmarks `binom`, `vs_easy`, `vs_hard` and `sha_fast`.
 - The option `-O1` was added because some benchmarks generated Wasm functions with too many locals
 - The default stack size was increased from 65532 to 327680 because some benchmarks caused a stack overflow
