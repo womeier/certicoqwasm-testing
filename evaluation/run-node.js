@@ -57,9 +57,10 @@ let importObject = {
             obj.instance.exports.$pretty_print_constructor(res_value); console.log(""); // newline
             const stop_pp = Date.now();
             time_pp = stop_pp - start_pp;
+
         }
 
-        console.log(`Benchmark ${path}: {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": "${time_pp}", "program": "${program}"}} ms.`);
+        console.log(`Benchmark ${path}: {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": "${time_pp}", "bytes_used": "${bytes}", "program": "${program}"}} ms, bytes.`);
     } catch (error) {
         console.log(error);
         process.exit(1);

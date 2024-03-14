@@ -11,7 +11,7 @@ CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
 
 
-measurements = ["time_startup", "time_main", "time_pp"]
+measurements = ["time_startup", "time_main", "time_pp", "bytes_used"]
 
 
 def get_info(path):
@@ -159,10 +159,13 @@ def measure(engine, runs, folder, verbose, optimize_flag):
         time_startup = int(sum(result["time_startup"]) / len(result["time_startup"]))
         time_main = int(sum(result["time_main"]) / len(result["time_main"]))
         time_pp = int(sum(result["time_pp"]) / len(result["time_pp"]))
+        memory_in_kb = int(result["bytes_used"][0] / 1000) if runs > 0 and "bytes_used" in measurements else "N/A"
+
         print(
             f"{description} / avg of {runs} runs / {program}\t: "
             f"startup: {time_startup}, main: {time_main}, pp: {time_pp}, "
-            f" sum: {time_startup+ time_main + time_pp}"
+            f" sum: {time_startup+ time_main + time_pp}, "
+            f" memory used: {memory_in_kb} kb"
         )
 
 

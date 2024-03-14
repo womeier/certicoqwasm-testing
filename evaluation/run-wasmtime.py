@@ -56,10 +56,11 @@ time_pp = int((stop_pp - start_pp) * 1000)
 
 print()
 
-# bytes_used = instance.exports(store)["bytes_used"].value(store)
+bytes_used = instance.exports(store)["bytes_used"].value(store)
+
 print(
     f"Benchmark {path}:"
     + "{{"
-    + f'"time_startup": "{time_startup}", "time_main": "{time_main}", "time_pp": "{time_pp}"'
-    + "}} ms."
+    + f'"time_startup": "{time_startup}", "time_main": "{time_main}", "time_pp": "{time_pp}", "bytes_used": "{bytes_used}", "program": "{program}"'
+    + "}} ms, bytes."
 )
