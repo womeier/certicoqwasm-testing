@@ -25,10 +25,11 @@ Evaluation of CertiCoq-Wasm
 
 ##### Memory usage
 
+
 |      |                |  vs_easy  |   vs_hard |  sha_fast |  binom | comment                                | reproduce
-|-----:|:---------------|----------:|----------:|----------:|------ :|:---------------------------------------|----------
-| Wasm | (Node.js)      |  20826 kb | 142740 kb |  74779 kb | 504 kb | Boxed 0-ary constructors (in CoqPL'24) | [code](https://github.com/womeier/certicoqwasm/commit/1518307d8e6897fdd9d43c73d381ab4b9fe37e90), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-feb-01-24) |
-| Wasm | (Node.js)      |   6128 kb |  38141 kb |  25642 kb | 248 kb | Unboxed 0-ary constructors             | [code](https://github.com/womeier/certicoqwasm/commit/6cf5c81f), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-0aryfast-feb-13-24) |
+|-----:|:---------------|----------:|----------:|----------:|-------:|:---------------------------------------|----------
+| Wasm | (Node.js)      |  20826 kb | 142740 kb |  74779 kb | 504 kb | Boxed 0-ary constructors (in CoqPL'24) | [code](https://github.com/womeier/certicoqwasm/commit/1518307d8e6897fdd9d43c73d381ab4b9fe37e90), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-feb-01-24)
+| Wasm | (Node.js)      |   6128 kb |  38141 kb |  25642 kb | 248 kb | Unboxed 0-ary constructors             | [code](https://github.com/womeier/certicoqwasm/commit/6cf5c81f), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/cps-0aryfast-feb-13-24)
 
 On average, unboxed 0-ary constructors yield a ~65% decrease in memory consumption across the benchmarks.
 
