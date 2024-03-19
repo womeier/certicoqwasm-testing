@@ -112,10 +112,11 @@ def single_run_wasmtime(folder, program, verbose):
 @click.command()
 @click.option("--engine", type=str, help="Wasm engine", default="node")
 @click.option("--runs", type=int, help="Number of runs", default=10)
+@click.option("--memory_usage", is_flag=True, help="Print memory usage of linear memory", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
 @click.option("--optimize_flag", type=str, help="Binaryen optimizations flag")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-def measure(engine, runs, folder, verbose, optimize_flag):
+def measure(engine, runs, memory_usage, folder, verbose, optimize_flag):
     assert (
         engine == "wasmtime" or engine == "node"
     ), "Expected wasmtime or node runtime."
@@ -163,9 +164,9 @@ def measure(engine, runs, folder, verbose, optimize_flag):
 
         print(
             f"{description} / avg of {runs} runs / {program}\t: "
-            f"startup: {time_startup}, main: {time_main}, pp: {time_pp}, "
-            f" sum: {time_startup+ time_main + time_pp}, "
-            f" memory used: {memory_in_kb} kb"
+            f"startup: {time_startup}, main: {time_main}, pp: {time_pp}"
+            f", sum: {time_startup+ time_main + time_pp}" +
+            (f", memory used: {memory_in_kb} kb" if memory_usage else "")
         )
 
 
