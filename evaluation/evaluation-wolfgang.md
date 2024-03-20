@@ -39,9 +39,9 @@ On average, unboxed 0-ary constructors yield a ~65% decrease in memory consumpti
 #### Binaryen optimizations (binaryen version 108)
 |      |                |  vs_easy | vs_hard |  sha_fast | binom | comment            | reproduce
 |-----:|:---------------|---------:|--------:|----------:|------:|:-------------------|----------
-| Wasm | (Node.js)      |    31 ms |   98 ms |     72 ms | 10 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above) | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
-| Wasm | (Node.js)      |    26 ms |   84 ms |     57 ms | 7 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above), binaryen -O2 | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
-| Wasm | (Node.js)      |    25 ms |   80 ms |     56 ms | 6 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above), binaryen -O3 | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
+| Wasm | (Node.js)      |    31 ms |   98 ms |     72 ms | 10 ms | non-CPS, WasmCert tail calls, 0ary fast (from above)               |
+| Wasm | (Node.js)      |    26 ms |   84 ms |     57 ms |  7 ms | non-CPS, WasmCert tail calls, 0ary fast (from above), binaryen -O2 |
+| Wasm | (Node.js)      |    25 ms |   80 ms |     56 ms |  6 ms | non-CPS, WasmCert tail calls, 0ary fast (from above), binaryen -O3 |
 
 TODO:
 - emscripten, wasmtime, rust-concert
