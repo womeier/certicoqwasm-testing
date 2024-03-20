@@ -1,7 +1,8 @@
 Evaluation of CertiCoq-Wasm
 ---------------------------
 
-everything Node.js v18.19 (outdated, redo with newer version)
+Note: the execution times don't include instantiation, which can be significiant for Node.js v18.19 (over a second for some benchmarks)
+TODO measure with new Node.js version
 
 #### CPS vs non-CPS, all 0ary constrs boxed (naive)
 
