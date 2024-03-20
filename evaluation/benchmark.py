@@ -22,10 +22,8 @@ def get_info(path):
 
     benchmarks_info = {
         "binaries/cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary",
-        "binaries/non-cps-PROPER-feb-07-24": "non-CPS, naive 0ary",
-        "binaries/non-cps-BAD-feb-06-24": "non-CPS, no Wasm tailcalls, naive 0ary",
-        "binaries/non-cps-PROPER-0aryfast-feb-13-24": "non-CPS, WasmCert tailcalls",
         "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls",
+        "binaries/non-cps-PROPER-feb-07-24": "non-CPS, naive 0ary",
         "binaries/non-cps-PROPER-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
     }
     try:
