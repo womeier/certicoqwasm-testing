@@ -41,8 +41,5 @@ On average, unboxed 0-ary constructors yield a ~65% decrease in memory consumpti
 | Wasm | (Node.js)      |    25 ms |   80 ms |     56 ms | 6 ms | non-CPS, WasmCert tail calls, 0ary fast (fastest from above), binaryen -O3 | [code](https://github.com/womeier/certicoqwasm/commit/7c502b15), [binaries](https://github.com/womeier/certicoqwasm-testing/tree/master/evaluation/binaries/non-cps-PROPER-0aryfast-feb-13-24)
 
 TODO:
-- wasmtime
-- emscripten
-- rust, concert
+- emscripten, wasmtime, rust-concert
 - more benchmarks
-- instantiation: binaryen optimization -O2 reduces instantiation time drastically, investigate which opt is responsible
