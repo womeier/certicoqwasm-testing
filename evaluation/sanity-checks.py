@@ -4,7 +4,7 @@ import subprocess
 from tqdm import tqdm
 
 folders = list(filter(lambda x: x != "clean.py", os.listdir("./binaries/")))
-programs = ["binom", "sha_fast", "vs_easy", "vs_hard"]
+programs = ["demo1", "demo2", "list_sum", "binom", "sha_fast", "vs_easy", "vs_hard"]
 
 
 ################################################################################################
@@ -37,9 +37,12 @@ else:
 
 #########################################################################################
 
-print("\nRunning all binaries and checking for correct result printed to stdout.")
+print("\nRunning all binaries (except color) and checking for correct result printed to stdout.")
 
 for program in tqdm(programs):
+    if program == "color":
+        continue
+
     expected_res = open(f"./results/{program}.txt").read()
     for folder in folders:
         r = subprocess.run(
