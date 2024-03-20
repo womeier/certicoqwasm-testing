@@ -1,6 +1,8 @@
 Evaluation of CertiCoq-Wasm
 ---------------------------
 
+everything Node.js v18.19 (outdated, redo with newer version)
+
 #### CPS vs non-CPS, all 0ary constrs boxed (naive)
 
 |      |                |  vs_easy | vs_hard |  sha_fast | binom | comment            | reproduce
