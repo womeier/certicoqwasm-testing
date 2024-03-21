@@ -37,26 +37,50 @@ else:
 
 #########################################################################################
 
-print("\nRunning all binaries (except color) and checking for correct result printed to stdout.")
+print("\nRunning all binaries and checking for correct result printed to stdout.")
 
 for program in tqdm(programs):
-    if program == "color":
-        continue
-
     expected_res = open(f"./results/{program}.txt").read()
     for folder in folders:
+        # RUN wasm-opt
+        program_opt = f"{program}-opt_coalesce-locals"
+        path_program_opt = (
+            f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm"
+        )
+        path_program = f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
+        if not os.path.exists(path_program_opt):
+            r = subprocess.run(
+                [
+                    "wasm-opt",
+                    "--coalesce-locals",
+                    "--enable-tail-call",
+                    "--enable-mutable-globals",
+                    path_program,
+                    "--output",
+                    path_program_opt,
+                ],
+                capture_output=True,
+            )
+            if r.returncode != 0:
+                print(f"{folder}: failed to call wasm-opt")
+                print(r.stderr.decode("utf-8"))
+                exit()
+
+        # RUN
         r = subprocess.run(
             [
                 "node",
                 "--experimental-wasm-return_call",
                 "./run-node.js",
                 f"./binaries/{folder}/",
-                program,
+                program_opt,
             ],
             capture_output=True,
         )
         if r.returncode != 0:
-            print(f"{folder}/CertiCoq.test.{program}.wasm returned non-0 return code.")
+            print(
+                f"{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm returned non-0 return code."
+            )
             print(r.stderr.decode("utf-8"))
             exit()
 

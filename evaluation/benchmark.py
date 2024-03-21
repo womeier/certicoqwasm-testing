@@ -21,10 +21,10 @@ def get_info(path):
         path = path[2:]
 
     benchmarks_info = {
-        "binaries/cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary",
+        "binaries/cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary (CoqPL)",
         "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
-        "binaries/non-cps-PROPER-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
-        "binaries/non-cps-PROPER-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
+        "binaries/non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
+        "binaries/non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
     }
     try:
         info = benchmarks_info[path]
@@ -36,24 +36,33 @@ def get_info(path):
     return info
 
 
+def program_opt_name(program, flag):
+    if flag[0] == "-":
+        if flag[1] == "-":
+            return f"{program}-opt_{flag[2:]}"
+        else:
+            return f"{program}-opt_{flag[1:]}"
+    else:
+        return f"{program}-unexpected-{flag}"
+
+
 def create_optimized_programs(folder, flag):
     print(f"Creating programs optimized with binaryen {flag} in {folder}.")
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
     for program in tqdm(programs):
-        orig = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
-        opt = os.path.join(
-            folder, f"CertiCoq.Benchmarks.tests.{program}-opt-{flag}.wasm"
-        )
-        if not os.path.exists(opt):
+        program_opt = program_opt_name(program, flag)
+        path_orig = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+        path_opt = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program_opt}.wasm")
+        if not os.path.exists(path_opt):
             subprocess.run(
                 [
                     "wasm-opt",
                     f"{flag}",
                     "--enable-tail-call",
                     "--enable-mutable-globals",
-                    orig,
+                    path_orig,
                     "--output",
-                    opt,
+                    path_opt,
                 ]
             )
 
@@ -110,7 +119,7 @@ def single_run_wasmtime(folder, program, verbose):
 @click.command()
 @click.option("--engine", type=str, help="Wasm engine", default="node")
 @click.option("--runs", type=int, help="Number of runs", default=10)
-@click.option("--memory_usage", is_flag=True, help="Print memory usage of linear memory", default=False)
+@click.option("--memory_usage", is_flag=True, help="Print lin.mem. used", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
 @click.option("--optimize_flag", type=str, help="Binaryen optimizations flag")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
@@ -127,7 +136,7 @@ def measure(engine, runs, memory_usage, folder, verbose, optimize_flag):
 
     for program in programs:
         if optimize_flag is not None:
-            program = f"{program}-opt-{optimize_flag}"
+            program = program_opt_name(program, optimize_flag)
             path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
             if not os.path.exists(path):
                 print("Didn't find optimized binaries.")
@@ -158,13 +167,20 @@ def measure(engine, runs, memory_usage, folder, verbose, optimize_flag):
         time_startup = int(sum(result["time_startup"]) / len(result["time_startup"]))
         time_main = int(sum(result["time_main"]) / len(result["time_main"]))
         time_pp = int(sum(result["time_pp"]) / len(result["time_pp"]))
-        memory_in_kb = int(result["bytes_used"][0] / 1000) if runs > 0 and "bytes_used" in measurements else "N/A"
+        memory_in_kb = int(result["bytes_used"][0] / 1000) if runs > 0 else "N/A"
+
+        # count spaces instead of using \t
+        max_program_len = max(map(len, programs))
+        program_orig_len = (
+            len(program.split("-opt_")[0]) if "-opt_" in program else len(program)
+        )
+        program_pp = (max_program_len - program_orig_len) * " " + program
 
         print(
-            f"{description} / avg of {runs} runs / {program}\t: "
-            f"startup: {time_startup}, main: {time_main}, pp: {time_pp}"
-            f", sum: {time_startup+ time_main + time_pp}" +
-            (f", memory used: {memory_in_kb} kb" if memory_usage else "")
+            f"{description} / avg of {runs} runs / {program_pp} : "
+            f"startup: {time_startup:>3}, main: {time_main:>3}, pp: {time_pp:>2}"
+            f", sum: {time_startup+time_main+time_pp:>4}"
+            + (f", memory used: {memory_in_kb} kb" if memory_usage else "")
         )
 
 
