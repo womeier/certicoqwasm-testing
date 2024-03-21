@@ -25,6 +25,7 @@ def get_info(path):
         "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
         "binaries/non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
         "binaries/non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
+        "binaries/non-cps-grow-mem-in-fn-mrch-21-24": "non-cps, with return instr, 0ary, grow_mem sep. func",
     }
     try:
         info = benchmarks_info[path]
@@ -120,20 +121,22 @@ def single_run_wasmtime(folder, program, verbose):
 @click.option("--engine", type=str, help="Wasm engine", default="node")
 @click.option("--runs", type=int, help="Number of runs", default=10)
 @click.option("--memory_usage", is_flag=True, help="Print lin.mem. used", default=False)
+@click.option("--binary_size", is_flag=True, help="Print binary size", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
 @click.option("--optimize_flag", type=str, help="Binaryen optimizations flag")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-def measure(engine, runs, memory_usage, folder, verbose, optimize_flag):
+def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_flag):
     assert (
         engine == "wasmtime" or engine == "node"
     ), "Expected wasmtime or node runtime."
     assert runs > 0, "Expected at least one run."
 
     description = get_info(folder.strip())
-    programs = open(f"{folder}/TESTS").read().strip().split("\n")
-    opt_desc = f"({optimize_flag})" if optimize_flag is not None else ""
-    print(f"Running {description} {opt_desc}, avg. of {runs} runs in {engine}.")
+    if optimize_flag is not None:
+        description = description + f" ({optimize_flag})"
+    print(f"Running {description}, avg. of {runs} runs in {engine}.")
 
+    programs = open(f"{folder}/TESTS").read().strip().split("\n")
     for program in programs:
         if optimize_flag is not None:
             program = program_opt_name(program, optimize_flag)
@@ -168,6 +171,7 @@ def measure(engine, runs, memory_usage, folder, verbose, optimize_flag):
         time_main = int(sum(result["time_main"]) / len(result["time_main"]))
         time_pp = int(sum(result["time_pp"]) / len(result["time_pp"]))
         memory_in_kb = int(result["bytes_used"][0] / 1000) if runs > 0 else "N/A"
+        binary_size_in_kb = int(os.stat(path).st_size / 1000)
 
         # count spaces instead of using \t
         max_program_len = max(map(len, programs))
@@ -177,10 +181,11 @@ def measure(engine, runs, memory_usage, folder, verbose, optimize_flag):
         program_pp = (max_program_len - program_orig_len) * " " + program
 
         print(
-            f"{description} / avg of {runs} runs / {program_pp} : "
-            f"startup: {time_startup:>3}, main: {time_main:>3}, pp: {time_pp:>2}"
+            f"{program_pp} : "
+            f"startup: {time_startup:>2}, main: {time_main:>3}, pp: {time_pp:>2}"
             f", sum: {time_startup+time_main+time_pp:>4}"
-            + (f", memory used: {memory_in_kb} kb" if memory_usage else "")
+            + (f", memory used: {memory_in_kb} KB" if memory_usage else "")
+            + (f", bin size: {binary_size_in_kb:>4} KB" if binary_size else "")
         )
 
 
