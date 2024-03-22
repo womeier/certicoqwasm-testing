@@ -25,7 +25,6 @@ def get_info(path):
         "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
         "binaries/non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
         "binaries/non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
-        "binaries/non-cps-grow-mem-in-fn-mrch-21-24": "non-cps, with return instr, 0ary, grow_mem sep. func",
     }
     try:
         info = benchmarks_info[path]
