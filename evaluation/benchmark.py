@@ -138,6 +138,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_f
 
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
     for program in programs:
+        path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
         if optimize_flag is not None:
             program = program_opt_name(program, optimize_flag)
             path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
