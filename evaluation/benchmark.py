@@ -22,15 +22,16 @@ def get_info(path):
         path = path[2:]
 
     benchmarks_info = {
-        "binaries/cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary (CoqPL)",
-        "binaries/cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
-        "binaries/non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
-        "binaries/non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
-        "binaries/non-cps-metacoq-update-mrch-15-24": "non-cps (same as (feb-26-24), merged update to metacoq 1.3)",
-        "binaries/non-cps-ifs-unnested-mrch-22-24": "non-cps (same as mrch-15-24), don't nest if statements",
+        "cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary (CoqPL)",
+        "cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
+        "non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
+        "non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
+        "non-cps-metacoq-update-mrch-15-24": "non-cps (same as (feb-26-24), merged update to metacoq 1.3)",
+        "non-cps-ifs-unnested-mrch-22-24": "non-cps (same as mrch-15-24), don't nest if statements",
+        "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function"
     }
     try:
-        info = benchmarks_info[path]
+        info = benchmarks_info[path.replace("binaries/", "")]
     except KeyError:
         print("Running new binaries. Did you run MAKE INSTALL?\n")
         time.sleep(1)
