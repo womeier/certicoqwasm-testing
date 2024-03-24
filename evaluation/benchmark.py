@@ -10,7 +10,8 @@ import time
 CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
 
-
+# NODE = "/usr/bin/node"
+NODE = "node"
 measurements = ["time_startup", "time_main", "time_pp", "bytes_used"]
 
 
@@ -36,6 +37,18 @@ def get_info(path):
         info = "DIDN'T FIND DESCRIPTION"
 
     return info
+
+
+def get_engine_version(engine):
+    if engine == "wasmtime":
+        r = subprocess.run(["wasmtime", "--version"], capture_output=True)
+        return r.stdout.decode("ascii").strip().replace("-cli ", " (") + ")"
+    elif engine == "node":
+        r = subprocess.run([NODE, "--version"], capture_output=True)
+        return f"node ({r.stdout.decode('ascii').strip()})"
+    else:
+        print(f"Engine {engine} not found.")
+        exit(1)
 
 
 def program_opt_name(program, flag):
@@ -72,7 +85,7 @@ def create_optimized_programs(folder, flag):
 def single_run_node(folder, program, verbose):
     r = subprocess.run(
         [
-            "node",
+            NODE,
             "--experimental-wasm-return_call",
             "./run-node.js",
             folder,
@@ -135,7 +148,8 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_f
     description = get_info(folder.strip())
     if optimize_flag is not None:
         description = description + f" ({optimize_flag})"
-    print(f"Running {description}, avg. of {runs} runs in {engine}.")
+    engine_version = get_engine_version(engine)
+    print(f"Running {description}, avg. of {runs} runs in {engine_version}.")
 
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
     for program in programs:
