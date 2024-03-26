@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from wasmtime import Store, Module, Instance, Func, FuncType, ValType, Config, Engine
 import sys
 import time
