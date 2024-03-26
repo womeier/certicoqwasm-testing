@@ -1,9 +1,13 @@
 var args = process.argv.slice(2);
-if (args.length != 1) {
-    console.log("Expected one arg: 0: program, e.g. color");
+if (args.length != 2) {
+    console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
+    console.log("e.g.: $ node --experimental-wasm-return_call run-node.js ./binaries/cps-0aryfast-feb-13-24 vs_easy");
     process.exit(1);
 }
-let program = args[0];
+let path = args[0];
+if (path.charAt(path.length - 1) != "/") { path = path + "/" }
+
+let program = args[1];
 
 let imports = {};
 imports['__wbindgen_placeholder__'] = module.exports;
@@ -42,8 +46,7 @@ module.exports.writestring = function(arg0, arg1) {
 (async () => {
     const start_startup = Date.now();
 
-    const path = require('path').join(__dirname, `./binaries/${program}.wasm`);
-    const bytes = require('fs').readFileSync(path);
+    const bytes = require('fs').readFileSync(`${path}/${program}.wasm`);
     // const wasmModule = new WebAssembly.Module(bytes);
     // const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
     const obj = await WebAssembly.instantiate(
@@ -60,6 +63,6 @@ module.exports.writestring = function(arg0, arg1) {
     const time_main = stop_main - start_main;
 
     //console.log(WebAssembly.Module.imports(wasmModule));
-    console.log(`Benchmark rust-wasm: {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": "${time_pp}", "program": "${program}"}} ms.`);
+    console.log(`Benchmark rust-wasm (${path}): {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": "${time_pp}", "program": "${program}"}} ms.`);
 
 })();
