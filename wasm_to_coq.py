@@ -19,29 +19,23 @@ def b2s(b):
 
 
 preamble = """
-Unset Universe Checking.
-
-From Coq Require Import String.
-From Coq Require Import ZArith List.
+From Coq Require Import String List.
 From Coq.Strings Require Import Byte.
-
 From CertiCoq Require Import LambdaANF.toplevel Common.Common Common.compM Common.Pipeline_utils.
 From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show.
-From MetaCoq.Template Require Import bytestring MCString.
+From MetaCoq.Utils Require Import bytestring MCString.
 
-Require Import ExtLib.Structures.Monad.
-Import MonadNotation.
-
-From Wasm Require Import binary_format_parser binary_format_printer datatypes prettyprint
-                         datatypes_properties check_toks instantiation.
+From Wasm Require Import binary_format_parser datatypes instantiation_func.
 """
 
 definition_bytelist = "Definition test_bytes : list Byte.byte := " + " :: ".join([b2s(x) for x in bytestring]) + " :: nil."
 definition_module = "Definition test_module : option module := run_parse_module test_bytes."
 compute = "Compute test_module."
 type_check = """Definition type_check_test_module :=
-    m <- test_module ;;
-    module_type_checker m.
+  match test_module with
+  | Some m => module_type_checker m
+  | None => None
+  end.
 """
 compute_type_check = "Compute type_check_test_module."
 
