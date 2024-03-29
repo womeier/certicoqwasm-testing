@@ -30,4 +30,10 @@ list_sum:
 	wat2wasm list_sum-name.wat -o list_sum.wasm
 	rm *.wat
 
+sha_fast:
+	wasm2wat sha_fast.wasm -o sha_fast.wat
+	cat sha_fast.wat | ./insert_import_name.py > sha_fast-name.wat
+	wat2wasm sha_fast-name.wat -o sha_fast.wasm
+	rm *.wat
+
 # TODO sha, vs_easy, vs_hard
