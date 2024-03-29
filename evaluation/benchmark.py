@@ -88,6 +88,7 @@ def single_run_node(folder, program, verbose):
         [
             NODE,
             "--experimental-wasm-return_call",
+            "--no-wasm-bounds-checks",
             "./run-node.js",
             folder,
             program,
