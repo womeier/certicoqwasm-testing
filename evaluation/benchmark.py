@@ -185,9 +185,10 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_f
             for meas in measurements:
                 result[meas].append(int(val[meas]))
 
-        time_startup = int(sum(result["time_startup"]) / len(result["time_startup"]))
-        time_main = int(sum(result["time_main"]) / len(result["time_main"]))
-        time_pp = int(sum(result["time_pp"]) / len(result["time_pp"]))
+        time_startup = round(sum(result["time_startup"]) / len(result["time_startup"]))
+        time_main = round(sum(result["time_main"]) / len(result["time_main"]))
+        time_pp = round(sum(result["time_pp"]) / len(result["time_pp"]))
+
         memory_in_kb = int(result["bytes_used"][0] / 1000) if runs > 0 else "N/A"
         binary_size_in_kb = int(os.stat(path).st_size / 1000)
 
