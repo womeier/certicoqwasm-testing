@@ -1,7 +1,7 @@
 var args = process.argv.slice(2);
 if (args.length != 2) {
     console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
-    console.log("e.g.: $ node --experimental-wasm-return_call run-node.js ./binaries/cps-0aryfast-feb-13-24 vs_easy");
+    console.log("e.g.: $ node --experimental-wasm-return_call run-node.js ./binaries/naive vs_easy");
     process.exit(1);
 }
 let path = args[0];

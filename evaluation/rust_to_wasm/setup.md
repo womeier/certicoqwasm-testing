@@ -22,14 +22,27 @@ only derive Clone, not Debug for:
 - `%s/loop/loop42/g`
 - still sth. wrong TODO
 
+### bernstein_yang
+- unchecked_arith: needed type-annotations for anonymous lambda functions (i64)
+
 ### color
-- doesn't compile, binary too large for rustc
+- naive: doesn't compile, binary too large for rustc
+- unchecked_arith: works
 
 ### sha:
-- works for naive extraction, with mapping needs additional type annotation
+- works for naive extraction
+- unchecked_arith: needs additional type annotations at anonymous lambdas (i64)
 
 # Known to run
+- for some of them you need node --stack-size=10000000
 ## naive
-- demo1 demo2 list_sum sha sm_gauss_N even_10000 binom
-- ack_3_9 with `--stack-size=1000000`
+- demo1 demo2 list_sum sha_fast sm_gauss_N even_10000 binom ack_3_9
+## unchecked_arith
+- demo1 demo2 list_sum sha_fast sm_gauss_N even_10000 binom ack_3_9
+
+# Known to fail
+see https://github.com/rustwasm/wasm-bindgen/issues/3910
+## naive
+- sm_gauss_nat, bernstein_yang: mem access out of bounds
+## unchecked_arith
 - sm_gauss_nat, bernstein_yang: mem access out of bounds
