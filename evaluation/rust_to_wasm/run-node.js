@@ -58,7 +58,7 @@ module.exports.writestring = function(arg0, arg1) {
     const time_startup = stop_startup - start_startup;
 
     const start_main = Date.now();
-    await wasm.main();
+    wasm.main();
     const stop_main = Date.now();
     const time_main = stop_main - start_main;
 
