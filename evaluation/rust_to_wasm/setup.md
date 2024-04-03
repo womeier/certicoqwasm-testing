@@ -2,7 +2,7 @@
 Coq --[coq-rust-extraction]--> Rust ----[wasm-pack/wasm-bindgen]--> Wasm
 
 ## General:
-- See the setup [here](https://github.com/womeier/certicoqwasm/tree/rustextraction)
+- See the setup [here](https://github.com/womeier/certicoqwasm/tree/rustextraction), run `make` in the `benchmarks/` folder
 - rust code is compiled with `rustc -O3`
 - naive: no mapping from nats to Rust native i64s
 - unchecked_arith: mapping from nats to Rust native i64s `From RustExtraction Require Import ExtrRustUncheckedArith.`
