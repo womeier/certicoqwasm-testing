@@ -64,7 +64,7 @@ def program_opt_name(program, flag):
 
 
 def create_optimized_programs(folder, flag):
-    print(f"Creating programs optimized with binaryen {flag} in {folder}.")
+    print(f"Creating programs optimized with wasm-opt {flag} in {folder}.")
     programs = open(f"{folder}/TESTS").read().strip().split("\n")
     for program in tqdm(programs):
         program_opt = program_opt_name(program, flag)
@@ -170,15 +170,15 @@ def org_table(tests, measure, results):
 @click.command()
 @click.option("--engine", type=str, help="Wasm engine", default="node")
 @click.option("--runs", type=int, help="Number of runs", default=10)
-@click.option("--memory_usage", is_flag=True, help="Print lin.mem. used", default=False)
-@click.option("--binary_size", is_flag=True, help="Print binary size", default=False)
+@click.option("--memory-usage", is_flag=True, help="Print lin.mem. used", default=False)
+@click.option("--binary-size", is_flag=True, help="Print binary size", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", multiple=True, required=True)
-@click.option("--optimize_flag", type=str, help="Binaryen optimizations flag")
+@click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
 @click.option("--tests", type=str, help="Path to file containing tests")
-@click.option("--print_latex_table", is_flag=True, help="Print results as latex table", default=False)
-@click.option("--print_org_table", is_flag=True, help="Print results as org mode table", default=False)
-def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_flag, tests, print_latex_table, print_org_table):
+@click.option("--print-latex-table", is_flag=True, help="Print results as latex table", default=False)
+@click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)
+def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, tests, print_latex_table, print_org_table):
     assert (
         engine == "wasmtime" or engine == "node"
     ), "Expected wasmtime or node runtime."
@@ -194,8 +194,8 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_f
         f_name = pathlib.PurePath(f).name
 
         description = get_info(f.strip())
-        if optimize_flag is not None:
-            description = description + f" ({optimize_flag})"
+        if wasm_opt is not None:
+            description = description + f" ({wasm_opt})"
         engine_version = get_engine_version(engine)
         print(f"Running {description}, avg. of {runs} runs in {engine_version}.")
 
@@ -213,14 +213,14 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_f
             if not os.path.exists(path):
                 continue
 
-            if optimize_flag is not None:
-                program = program_opt_name(program, optimize_flag)
+            if wasm_opt is not None:
+                program = program_opt_name(program, wasm_opt)
                 path = f"{f}/CertiCoq.Benchmarks.tests.{program}.wasm"
                 if not os.path.exists(path):
 
                     print(f"Didn't find optimized binaries: {program}")
                     # print("Didn't find optimized binaries.")
-                    create_optimized_programs(f, flag=optimize_flag)
+                    create_optimized_programs(f, flag=wasm_opt)
                     print("Done. Please run again.")
                     exit()
 
@@ -282,7 +282,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_f
             latex_table(collected_tests, meas, all_results)
 
         if binary_size:
-            print(f"\nPrinting LaTeX table for binary size:")
+            print("\nPrinting LaTeX table for binary size:")
             latex_table(collected_tests, "binary_size_in_kb", all_results)
 
     if print_org_table:
@@ -296,7 +296,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, optimize_f
             org_table(collected_tests, meas, all_results)
 
         if binary_size:
-            print(f"\nPrinting org table for binary size:")
+            print("\nPrinting org table for binary size:")
             org_table(collected_tests, "binary_size_in_kb", all_results)
 
     print("")

@@ -28,12 +28,12 @@ instance = Instance(store, module, [print_char_stdout, print_int_stdout])
 
 # run main
 start = time.time()
-instance.exports(store)["$main_function"](store)
+instance.exports(store)["main_function"](store)
 end = time.time()
 
 result = instance.exports(store)["result"].value(store)
 sys.stdout.write("====> ")
-instance.exports(store)["$pretty_print_constructor"](store, result)
+instance.exports(store)["pretty_print_constructor"](store, result)
 print()
 
 bytes_used = instance.exports(store)["bytes_used"].value(store)

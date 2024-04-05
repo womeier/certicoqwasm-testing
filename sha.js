@@ -12,8 +12,8 @@ function write_char (value) {
 
 let importObject = {
     env: {
-        $write_char: write_char,
-        $write_int: write_int,
+        write_char: write_char,
+        write_int: write_int,
 
     }
 /*    env: {
@@ -30,10 +30,8 @@ let importObject = {
 
     try {
         const start = Date.now();
-        obj.instance.exports.$main_function();
+        obj.instance.exports.main_function();
         const stop = Date.now();
-
-        obj.instance.exports.$main_function();
 
         let bytes = obj.instance.exports.bytes_used.value;
         console.log(`\n====> used ${bytes} bytes of memory, took ${(stop -start)} ms.`);
@@ -44,7 +42,7 @@ let importObject = {
         } else {
             let res = obj.instance.exports.result.value;
             process.stdout.write("\n====>");
-            obj.instance.exports.$pretty_print_constructor(res); console.log(""); // newline
+            obj.instance.exports.pretty_print_constructor(res); console.log(""); // newline
         }
     } catch (error) {
         console.log(error);
