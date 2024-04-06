@@ -4,8 +4,23 @@ import subprocess
 from tqdm import tqdm
 
 folders = list(filter(lambda x: x != "clean.py", os.listdir("./binaries/")))
-programs = ["demo1", "demo2", "list_sum", "binom", "sha_fast", "vs_easy", "vs_hard"]
+programs = [
+    "demo1",
+    "demo2",
+    "list_sum",
+    "binom",
+    "sha_fast",
+    "vs_easy",
+    "vs_hard",
+    "ack_3_9",
+    "even_10000",
+    "sm_gauss_N",
+    "sm_gauss_nat",
+]
 
+print("Sanitity checking the following combinations: ")
+print(f"- {', '.join(folders)}")
+print(f"- {', '.join(programs)}\n")
 
 ################################################################################################
 print("Checking that all binaries have a different sha256 sum.")
