@@ -20,7 +20,8 @@ programs = [
 
 print("Sanitity checking the following combinations: ")
 print(f"- {', '.join(folders)}")
-print(f"- {', '.join(programs)}\n")
+print(f"- {', '.join(programs)}")
+print("---------------------------------------------------------------------------------------")
 
 ################################################################################################
 print("Checking that all binaries have a different sha256 sum.")
