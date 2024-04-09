@@ -17,7 +17,7 @@ Coq --[coq-rust-extraction]--> Rust ----[wasm-pack/wasm-bindgen]--> Wasm
 - stack_machine: only derive Clone, not Debug for `pub enum CertiCoq_Benchmarks_lib_stack_machine_Numeric<'a, A> `
 - vs_easy/vs_hard: `%s/loop/loop42/g`, still sth. wrong TODO
 - bernstein_yang (unchecked_arith): needed type-annotations for anonymous lambdas (-> annotated i64)
-- color (naive): rustc takes forever to compile, too large? TODO try on Martin's laptop
+- color (naive): needs wasm-opt = "s", in Cargo.toml
 - sha (unchecked_arith) needs additional type annotations at anonymous lambdas (-> annotated i64)
 
 ## Known to run (some of them need `node --stack-size=10000000`)
