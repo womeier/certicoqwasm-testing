@@ -22,7 +22,7 @@ Coq --[coq-rust-extraction]--> Rust ----[wasm-pack/wasm-bindgen]--> Wasm
 
 ## Known to run (some of them need `node --stack-size=10000000`)
 ### naive
-- demo1 demo2 list_sum sha_fast sm_gauss_N even_10000 binom ack_3_9
+- demo1 demo2 list_sum sha_fast sm_gauss_N even_10000 binom ack_3_9 color
 ### unchecked_arith
 - demo1 demo2 list_sum sha_fast sm_gauss_N even_10000 binom ack_3_9 color
 
