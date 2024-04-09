@@ -1,3 +1,4 @@
+const fs = require("fs");
 var args = process.argv.slice(2);
 if (args.length != 2) {
     console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
@@ -46,7 +47,7 @@ module.exports.writestring = function(arg0, arg1) {
 (async () => {
     const start_startup = Date.now();
 
-    const bytes = require('fs').readFileSync(`${path}/${program}.wasm`);
+    const bytes = fs.readFileSync(`${path}/${program}.wasm`);
     // const wasmModule = new WebAssembly.Module(bytes);
     // const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
     const obj = await WebAssembly.instantiate(
