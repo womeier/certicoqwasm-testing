@@ -15,6 +15,21 @@ os.chdir(CWD)
 NODE = "node"
 measurements = ["time_startup", "time_main", "time_pp", "bytes_used"]
 
+programs = [
+    "demo1",
+    "demo2",
+    "list_sum",
+    "vs_easy",
+    "vs_hard",
+    "binom",
+    "color",
+    "sha_fast",
+    "even_10000",
+    "ack_3_9",
+    "sm_gauss_nat",
+    "sm_gauss_N",
+]
+
 
 def get_info(path):
     if path[-1] == "/":
@@ -175,18 +190,13 @@ def org_table(tests, measure, results):
 @click.option("--folder", type=str, help="Folder to Wasm binaries", multiple=True, required=True)
 @click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-@click.option("--tests", type=str, help="Path to file containing tests")
 @click.option("--print-latex-table", is_flag=True, help="Print results as latex table", default=False)
 @click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)
-def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, tests, print_latex_table, print_org_table):
+def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, print_latex_table, print_org_table):
     assert (
         engine == "wasmtime" or engine == "node"
     ), "Expected wasmtime or node runtime."
     assert runs > 0, "Expected at least one run."
-
-    tests_to_run = open(tests).read().strip().split("\n") if tests is not None else []
-
-    collected_tests = []
 
     all_results = dict()
 
@@ -199,15 +209,9 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
         engine_version = get_engine_version(engine)
         print(f"Running {description}, avg. of {runs} runs in {engine_version}.")
 
-        programs = open(f"{f}/TESTS").read().strip().split("\n") if tests is None else tests_to_run
         folder_results = dict()
         for program in programs:
-
-            test = program
-
-            if program not in collected_tests:
-                collected_tests.append(program)
-
+            program_name_orig = program
             path = f"{f}/CertiCoq.Benchmarks.tests.{program}.wasm"
 
             if not os.path.exists(path):
@@ -251,7 +255,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
             memory_in_kb = int(result["bytes_used"][0] / 1000) if runs > 0 else "N/A"
             binary_size_in_kb = int(os.stat(path).st_size / 1000)
 
-            folder_results[test] = {"time_startup": time_startup, "time_main": time_main, "time_pp": time_pp, "bytes_used": memory_in_kb, "binary_size_in_kb": binary_size_in_kb}
+            folder_results[program_name_orig] = {"time_startup": time_startup, "time_main": time_main, "time_pp": time_pp, "bytes_used": memory_in_kb, "binary_size_in_kb": binary_size_in_kb}
 
             # count spaces instead of using \t
             max_program_len = max(map(len, programs))
@@ -279,11 +283,11 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
                 continue
 
             print(f"\nPrinting LaTeX table for {meas}:")
-            latex_table(collected_tests, meas, all_results)
+            latex_table(programs, meas, all_results)
 
         if binary_size:
             print("\nPrinting LaTeX table for binary size:")
-            latex_table(collected_tests, "binary_size_in_kb", all_results)
+            latex_table(programs, "binary_size_in_kb", all_results)
 
     if print_org_table:
         print("\nPrinting org tables:\n")
@@ -293,11 +297,11 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
                 continue
 
             print(f"\nPrinting org table for {meas}:")
-            org_table(collected_tests, meas, all_results)
+            org_table(programs, meas, all_results)
 
         if binary_size:
             print("\nPrinting org table for binary size:")
-            org_table(collected_tests, "binary_size_in_kb", all_results)
+            org_table(programs, "binary_size_in_kb", all_results)
 
     print("")
 
