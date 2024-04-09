@@ -27,9 +27,8 @@ def get_info(path):
         "cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
         "non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
         "non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
-        "non-cps-metacoq-update-mrch-15-24": "non-cps (same as (feb-26-24), merged update to metacoq 1.3)",
-        "non-cps-ifs-unnested-mrch-22-24": "non-cps (same as mrch-15-24), don't nest if statements",
-        "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function"
+        "non-cps-ifs-unnested-mrch-22-24": "non-cps (same as feb-26-24, update MC), don't nest if statements",
+        "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function",
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
