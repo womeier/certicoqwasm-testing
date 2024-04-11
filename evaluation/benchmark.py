@@ -56,7 +56,7 @@ def get_info(path):
 
 
 def get_engine_version(engine):
-    if engine == "wasmtime":
+    if engine == "wasmtime" or engine == "wasmtime-compile":
         r = subprocess.run(["wasmtime", "--version"], capture_output=True)
         return r.stdout.decode("ascii").strip().replace("-cli ", " (") + ")"
     elif engine == "node":
@@ -97,6 +97,34 @@ def create_optimized_programs(folder, flag):
             )
 
 
+def wasmtime_compile_programs(folder, wasmopt_flag):
+    print(f"Compiling wasm modules AOT with wasmtime in {folder}.")
+    for program in tqdm(programs):
+        if wasmopt_flag is not None:
+            program = program_opt_name(program, wasmopt_flag)
+
+        path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+        if not os.path.exists(path):
+            print(f"wasmtime compile: didn't find input program {path}, skipping.")
+            continue
+
+        path_compiled = os.path.join(
+            folder, f"CertiCoq.Benchmarks.tests.{program}.cwasm"
+        )
+        if not os.path.exists(path_compiled):
+            subprocess.run(
+                [
+                    "wasmtime",
+                    "compile",
+                    "-W",
+                    "tail-call=y",
+                    path,
+                    "--output",
+                    path_compiled,
+                ]
+            )
+
+
 def single_run_node(folder, program, verbose):
     r = subprocess.run(
         [
@@ -110,10 +138,10 @@ def single_run_node(folder, program, verbose):
         capture_output=True,
     )
 
-    wasm_path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
-    assert (
-        r.returncode == 0
-    ), f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}"
+    wasm_path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+    if r.returncode != 0:
+        print(f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}")
+        exit(1)
 
     if verbose:
         print("STDOUT: " + r.stdout.decode("ascii"))
@@ -134,10 +162,10 @@ def single_run_wasmtime(folder, program, verbose):
         capture_output=True,
     )
 
-    wasm_path = f"{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
-    assert (
-        r.returncode == 0
-    ), f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}"
+    wasm_path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+    if r.returncode != 0:
+        print(f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}")
+        exit(1)
 
     if verbose:
         print("STDOUT: " + r.stdout.decode("ascii"))
@@ -145,6 +173,27 @@ def single_run_wasmtime(folder, program, verbose):
 
     res = "{" + r.stdout.decode("ascii").split("{{")[1].split("}}")[0] + "}"
     return json.loads(res)
+
+
+def single_run_wasmtime_compiled(folder, program):
+    wasm_path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.cwasm")
+
+    start_main = time.time()
+    subprocess.run(
+        ["wasmtime",
+         "run",
+         "--allow-precompiled",
+         "-W",
+         "tail-call=y",
+         "--invoke",
+         "main_function",
+         wasm_path,
+         ]
+    )
+    stop_main = time.time()
+    time_main = int((stop_main - start_main) * 1000)
+    return { "time_main": time_main, "time_startup": 0, "time_pp":0, "bytes_used": None }
+
 
 def latex_table(tests, measure, results):
     rows = [[binary_version] + ["N/A" if result.get(t) is None else f"{result[t][measure]}" for t in tests] for (binary_version, result) in results.items()]
@@ -191,10 +240,12 @@ def org_table(tests, measure, results):
 @click.option("--print-latex-table", is_flag=True, help="Print results as latex table", default=False)
 @click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)
 def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, print_latex_table, print_org_table):
-    assert (
-        engine == "wasmtime" or engine == "node"
-    ), "Expected wasmtime or node runtime."
-    assert runs > 0, "Expected at least one run."
+    if engine not in ["wasmtime", "wasmtime-compile", "node"]:
+        print("Expected wasmtime or node runtime.")
+        exit(1)
+    if runs <= 0:
+        print("Expected at least one run.")
+        exit(1)
 
     all_results = dict()
 
@@ -210,19 +261,26 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
         folder_results = dict()
         for program in programs:
             program_name_orig = program
-            path = f"{f}/CertiCoq.Benchmarks.tests.{program}.wasm"
+            path = os.path.join(f, f"CertiCoq.Benchmarks.tests.{program}.wasm")
 
             if not os.path.exists(path):
+                print(f"Didn't find {path}, skipping.")
                 continue
 
             if wasm_opt is not None:
                 program = program_opt_name(program, wasm_opt)
                 path = f"{f}/CertiCoq.Benchmarks.tests.{program}.wasm"
                 if not os.path.exists(path):
+                    print(f"Didn't find optimized binary: {path}")
+                    create_optimized_programs(f, wasm_opt)
+                    print("Done. Please run again.")
+                    exit()
 
-                    print(f"Didn't find optimized binaries: {program}")
-                    # print("Didn't find optimized binaries.")
-                    create_optimized_programs(f, flag=wasm_opt)
+            if engine == "wasmtime-compile":
+                path = os.path.join(f, f"CertiCoq.Benchmarks.tests.{program}.cwasm")
+                if not os.path.exists(path):
+                    print(f"Didn't find compiled, optimized binary: {path}")
+                    wasmtime_compile_programs(f, wasm_opt)
                     print("Done. Please run again.")
                     exit()
 
@@ -232,8 +290,11 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
                 if engine == "node":
                     res = single_run_node(f, program, verbose)
 
-                if engine == "wasmtime":
+                elif engine == "wasmtime":
                     res = single_run_wasmtime(f, program, verbose)
+
+                elif engine == "wasmtime-compile":
+                    res = single_run_wasmtime_compiled(f, program)
 
                 assert res is not None, "No value returned."
                 values.append(res)
@@ -244,16 +305,29 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
 
             for val in values:
                 for meas in measurements:
-                    result[meas].append(int(val[meas]))
+                    if meas == "bytes_used" and val[meas] is None:
+                        result[meas].append(None)
+                    else:
+                        result[meas].append(int(val[meas]))
 
             time_startup = round(sum(result["time_startup"]) / len(result["time_startup"]))
             time_main = round(sum(result["time_main"]) / len(result["time_main"]))
             time_pp = round(sum(result["time_pp"]) / len(result["time_pp"]))
 
-            memory_in_kb = int(result["bytes_used"][0] / 1000) if runs > 0 else "N/A"
+            memory_in_kb = (
+                int(result["bytes_used"][0] / 1000)
+                if (runs > 0 and result["bytes_used"][0] is not None)
+                else "N/A"
+            )
             binary_size_in_kb = int(os.stat(path).st_size / 1000)
 
-            folder_results[program_name_orig] = {"time_startup": time_startup, "time_main": time_main, "time_pp": time_pp, "bytes_used": memory_in_kb, "binary_size_in_kb": binary_size_in_kb}
+            folder_results[program_name_orig] = {
+                "time_startup": time_startup,
+                "time_main": time_main,
+                "time_pp": time_pp,
+                "bytes_used": memory_in_kb,
+                "binary_size_in_kb": binary_size_in_kb,
+            }
 
             # count spaces instead of using \t
             max_program_len = max(map(len, programs))
