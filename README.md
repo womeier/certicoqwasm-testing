@@ -3,7 +3,7 @@
 This repo contains scripts and examples for testing [certicoqwasm](https://github.com/womeier/certicoqwasm).
 
 ### Performance evaluation
-See [here](./evaluation/evaluation-wolfgang.md) and [here](./evaluation/evaluation_27_03_24.org) for some performance comparisons.
+See [here](./evaluation/evaluation-wolfgang.md) (outdated) and [here](./evaluation/evaluation_27_03_24.org) for some performance comparisons.
 
 #### How to add new binaries for evaluation
 1) Create folder in `./evaluation/binaries/`, put binaries in it
