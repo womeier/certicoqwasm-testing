@@ -50,7 +50,7 @@ def get_info(path):
     except KeyError:
         print("Running new binaries. Did you run MAKE INSTALL?\n")
         time.sleep(1)
-        info = "DIDN'T FIND DESCRIPTION"
+        info = path
 
     return info
 
@@ -79,7 +79,6 @@ def program_opt_name(program, flag):
 
 def create_optimized_programs(folder, flag):
     print(f"Creating programs optimized with wasm-opt {flag} in {folder}.")
-    programs = open(f"{folder}/TESTS").read().strip().split("\n")
     for program in tqdm(programs):
         program_opt = program_opt_name(program, flag)
         path_orig = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
