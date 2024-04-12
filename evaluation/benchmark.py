@@ -44,6 +44,7 @@ def get_info(path):
         "non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
         "non-cps-ifs-unnested-mrch-22-24": "non-cps (same as feb-26-24, update MC), don't nest if statements",
         "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function",
+        "non-cps-br_if-apr-12-24": "non-cps (same as mrch-24-24), br_if instead of if return",
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
