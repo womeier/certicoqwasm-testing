@@ -2,6 +2,7 @@
 
 import os
 import click
+import pkg_resources
 import subprocess
 import json
 from tqdm import tqdm
@@ -58,8 +59,10 @@ def get_info(path):
 
 def get_engine_version(engine):
     if engine == "wasmtime" or engine == "wasmtime-compile":
+        packages = {d.project_name: d.version for d in pkg_resources.working_set}
+        version_wasmtime_py = packages.get("wasmtime", "wasmtime-py not installed")
         r = subprocess.run(["wasmtime", "--version"], capture_output=True)
-        return r.stdout.decode("ascii").strip().replace("-cli ", " (") + ")"
+        return r.stdout.decode("ascii").strip().replace("-cli ", " (") + "), wasmtime-py (" + version_wasmtime_py + ")"
     elif engine == "node":
         r = subprocess.run([NODE, "--version"], capture_output=True)
         return f"node ({r.stdout.decode('ascii').strip()})"
