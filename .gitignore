@@ -22,6 +22,7 @@ Makefile.plugin.conf
 
 *.wat
 *.wasm
+*.cwasm
 *.c
 *.h
 *.ir

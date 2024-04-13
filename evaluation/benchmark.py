@@ -58,14 +58,16 @@ def get_info(path):
 
 
 def get_engine_version(engine):
-    if engine == "wasmtime" or engine == "wasmtime-compile":
+    if engine == "wasmtime":
         packages = {d.project_name: d.version for d in pkg_resources.working_set}
-        version_wasmtime_py = packages.get("wasmtime", "wasmtime-py not installed")
+        version = packages.get("wasmtime", "wasmtime-py not installed")
+        return f"wasmtime-py ({version})"
+    elif engine == "wasmtime-compile":
         r = subprocess.run(["wasmtime", "--version"], capture_output=True)
-        return r.stdout.decode("ascii").strip().replace("-cli ", " (") + "), wasmtime-py (" + version_wasmtime_py + ")"
+        return r.stdout.decode("ascii").strip().replace("-cli ", "-compile (") + ")"
     elif engine == "node":
         r = subprocess.run([NODE, "--version"], capture_output=True)
-        return f"node ({r.stdout.decode('ascii').strip()})"
+        return f"Node.js ({r.stdout.decode('ascii').strip()})"
     else:
         print(f"Engine {engine} not found.")
         exit(1)
@@ -260,7 +262,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
         if wasm_opt is not None:
             description = description + f" ({wasm_opt})"
         engine_version = get_engine_version(engine)
-        print(f"Running {description}, avg. of {runs} runs in {engine_version}.")
+        print(f"Running {description}, avg. of {runs} runs with {engine_version}.")
 
         folder_results = dict()
         for program in programs:
