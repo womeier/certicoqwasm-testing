@@ -40,13 +40,13 @@ module = Module.from_file(
 instance = Instance(store, module, [print_char_stdout, print_int_stdout])
 
 stop_startup = time.time()
-time_startup = int((stop_startup - start_startup) * 1000)
+time_startup = round((stop_startup - start_startup) * 1000)
 
 # run main
 start_main = time.time()
 instance.exports(store)["main_function"](store)
 stop_main = time.time()
-time_main = int((stop_main - start_main) * 1000)
+time_main = round((stop_main - start_main) * 1000)
 
 result = instance.exports(store)["result"].value(store)
 sys.stdout.write("====> ")
@@ -54,7 +54,7 @@ sys.stdout.write("====> ")
 start_pp = time.time()
 instance.exports(store)["pretty_print_constructor"](store, result)
 stop_pp = time.time()
-time_pp = int((stop_pp - start_pp) * 1000)
+time_pp = round((stop_pp - start_pp) * 1000)
 
 print()
 

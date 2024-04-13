@@ -195,7 +195,7 @@ def single_run_wasmtime_compiled(folder, program):
          ]
     )
     stop_main = time.time()
-    time_main = int((stop_main - start_main) * 1000)
+    time_main = round((stop_main - start_main) * 1000)
     return { "time_main": time_main, "time_startup": 0, "time_pp":0, "bytes_used": None }
 
 
