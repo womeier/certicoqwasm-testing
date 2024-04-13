@@ -93,7 +93,7 @@ def create_optimized_programs(folder, flag):
             subprocess.run(
                 [
                     "wasm-opt",
-                    f"{flag}",
+                    flag,
                     "--enable-tail-call",
                     "--enable-mutable-globals",
                     path_orig,
