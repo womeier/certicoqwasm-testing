@@ -21,9 +21,6 @@ def b2s(b):
 preamble = """
 From Coq Require Import String List.
 From Coq.Strings Require Import Byte.
-From CertiCoq Require Import LambdaANF.toplevel Common.Common Common.compM Common.Pipeline_utils.
-From CertiCoq Require Import LambdaANF.cps LambdaANF.cps_show.
-From MetaCoq.Utils Require Import bytestring MCString.
 
 From Wasm Require Import binary_format_parser datatypes instantiation_func.
 """
