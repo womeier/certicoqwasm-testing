@@ -1,51 +1,118 @@
-const fs = require('fs');
+const fs = require('node:fs');
+
 const bytes = fs.readFileSync(__dirname + '/sha.wasm');
 
-function write_int (value) {
-    process.stdout.write(value.toString())
-}
+const print_positive_sexp = (value, dataView) => {
+  if (value & 1) {
+    process.stdout.write('xH');
+  } else {
+    const tag = dataView.getInt32(value, true);
+    switch (tag) {
+      case 0: {
+      process.stdout.write('(xI ');
+      break;
+      }
 
-function write_char (value) {
-    var chr = String.fromCharCode(value);
-    process.stdout.write(chr);
-}
-
-let importObject = {
-    env: {
-        write_char: write_char,
-        write_int: write_int,
-
+      case 1: {
+      process.stdout.write('(xO ');
+      break;
+      }
     }
-/*    env: {
-        import_i32: 5_000_000_000, // _ is ignored in numbers in JS and WAT
-        import_f32: 123.0123456789,
-        import_f64: 123.0123456789,
-    } */
+
+    const argument = dataView.getInt32(value + 4, true);
+    print_positive_sexp(argument, dataView);
+    process.stdout.write(')');
+  }
+};
+
+const print_Z_sexp = (value, dataView) => {
+  if (value & 1) {
+    process.stdout.write('Z0');
+  } else {
+    const tag = dataView.getInt32(value, true);
+    switch (tag) {
+      case 0: {
+        process.stdout.write('(Zpos ');
+        break;
+      }
+
+      case 1: {
+        process.stdout.write('(Zneg ');
+        break;
+      }
+    }
+
+    const argument = dataView.getInt32(value + 4, true);
+    print_positive_sexp(argument, dataView);
+    process.stdout.write(')');
+  }
+};
+
+const print_compcert_byte_sexp = (value, dataView) => {
+  process.stdout.write('(mkint ');
+  const argument = dataView.getInt32(value + 4, true);
+  print_Z_sexp(argument, dataView);
+  process.stdout.write(')');
+};
+
+const print_list_sexp = (value, dataView, print_element) => {
+  if (value & 1) {
+    switch (value >> 1) {
+      case 0: {
+        process.stdout.write('nil');
+        break;
+      }
+    }
+  } else {
+    const tag = dataView.getInt32(value, true);
+    switch (tag) {
+      case 0: {
+        process.stdout.write('(cons ');
+        const head = dataView.getInt32(value + 4, true);
+        print_element(head, dataView);
+        process.stdout.write(' ');
+        const tail = dataView.getInt32(value + 8, true);
+        print_list_sexp(tail, dataView, print_element);
+        process.stdout.write(')');
+        break;
+      }
+    }
+  }
+};
+
+const print_sha = (value, dataView) => print_list_sexp(value, dataView, print_compcert_byte_sexp);
+
+const importObject = {
+  env: {
+    write_int(value) {
+      process.stdout.write(value.toString());
+    },
+    write_char(value) {
+      process.stdout.write(String.fromCharCode(value));
+    },
+  },
 };
 
 (async () => {
-    const obj = await WebAssembly.instantiate(
-        new Uint8Array (bytes), importObject
-    );
+  const object = await WebAssembly.instantiate(
+    new Uint8Array(bytes), importObject,
+  );
 
-    try {
-        const start = Date.now();
-        obj.instance.exports.main_function();
-        const stop = Date.now();
+  try {
+    const start = Date.now();
+    object.instance.exports.main_function();
+    const stop = Date.now();
 
-        let bytes = obj.instance.exports.bytes_used.value;
-        console.log(`\n====> used ${bytes} bytes of memory, took ${(stop -start)} ms.`);
+    const memory = object.instance.exports.memory;
+    const dataView = new DataView(memory.buffer);
+    const res_value = object.instance.exports.result.value;
+    process.stdout.write('====> ');
+    print_sha(res_value, dataView);
 
-        let out_of_mem = obj.instance.exports.result_out_of_mem.value;
-        if (out_of_mem == 1) {
-            console.log("Ran out of memory.")
-        } else {
-            let res = obj.instance.exports.result.value;
-            process.stdout.write("\n====>");
-            obj.instance.exports.pretty_print_constructor(res); console.log(""); // newline
-        }
-    } catch (error) {
-        console.log(error);
-        process.exit(1);
-    }
+    const bytes = object.instance.exports.bytes_used.value;
+    console.log(`\n====> used ${bytes} bytes of memory, took ${(stop - start)} (Node.js) ms.`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
 })();

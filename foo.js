@@ -1,32 +1,54 @@
-const fs = require('fs');
+const fs = require('node:fs');
+
 const bytes = fs.readFileSync(__dirname + '/foo.wasm');
 
-let importObject = {
-    env: {
-        write_int:  function(value) { process.stdout.write(value.toString()) },
-        write_char: function(value) { process.stdout.write(String.fromCharCode(value)) },
+const print_bool = (value, dataView) => {
+  if (value & 1) {
+    switch (value >> 1) {
+      case 0: {
+        process.stdout.write('true');
+        break;
+      }
+
+      case 1: {
+        process.stdout.write('false');
+        break;
+      }
     }
+  } else {}
+};
+
+const importObject = {
+  env: {
+    write_int(value) {
+      process.stdout.write(value.toString());
+    },
+    write_char(value) {
+      process.stdout.write(String.fromCharCode(value));
+    },
+  },
 };
 
 (async () => {
-    const obj = await WebAssembly.instantiate(
-        new Uint8Array (bytes), importObject
-    );
+  const object = await WebAssembly.instantiate(
+    new Uint8Array(bytes), importObject,
+  );
 
-    try {
-        const start = Date.now();
-        obj.instance.exports.main_function();
-        const stop = Date.now();
+  try {
+    const start = Date.now();
+    object.instance.exports.main_function();
+    const stop = Date.now();
 
-        let res = obj.instance.exports.result.value;
-        process.stdout.write("\n====>");
-        obj.instance.exports.pretty_print_constructor(res);
+    const memory = object.instance.exports.memory;
+    const dataView = new DataView(memory.buffer);
+    const res_value = object.instance.exports.result.value;
+    process.stdout.write('====> ');
+    print_bool(res_value, dataView);
 
-        let bytes = obj.instance.exports.bytes_used.value;
-        console.log(`\n====> used ${bytes} bytes of memory, took ${(stop -start)} (Node.js) ms.`);
-
-    } catch (error) {
-        console.log(error);
-        process.exit(1);
-    }
+    const bytes = object.instance.exports.bytes_used.value;
+    console.log(`\n====> used ${bytes} bytes of memory, took ${(stop - start)} (Node.js) ms.`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
 })();
