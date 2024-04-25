@@ -30,20 +30,11 @@ sha.wasm: sha256.vo
 #	cat sha.wat | tqdm --bytes | ./insert_tailcalls.py > sha-tail.wat
 #	wasm-tools parse sha-tail.wat -o sha.wasm
 
-sha_opt.wasm: sha.wasm
-	wasm-opt -O2 --enable-tail-call --enable-mutable-globals sha.wasm --output sha_opt.wasm
-
 sha: sha.wasm
 	python3 compare_output.py ./sha.js ./sha_output.txt
 
 sha_explicit: sha.wasm
 	node --experimental-wasm-return_call sha.js
-
-sha_opt: sha_opt.wasm
-	python3 compare_output.py ./sha.js ./sha_output.txt
-
-sha_opt_explicit: sha_opt.wasm
-	node --experimental-wasm-return_call sha_opt.js
 
 %.vo: %.v
 	coqc $<
