@@ -95,6 +95,8 @@ def create_optimized_programs(folder, flag):
                     "wasm-opt",
                     flag,
                     "--enable-tail-call",
+                    "--enable-reference-types",
+                    "--enable-gc",
                     "--enable-mutable-globals",
                     path_orig,
                     "--output",
@@ -136,6 +138,8 @@ def single_run_node(folder, program, verbose):
         [
             NODE,
             "--experimental-wasm-return_call",
+            "--experimental-wasm-typed_funcref",
+            "--experimental-wasm-gc",
             "--no-wasm-bounds-checks",
             "./run-node.js",
             folder,
