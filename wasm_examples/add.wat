@@ -24,7 +24,10 @@
     struct.new 2
     struct.get 2 0)
 
-  (table (;0;) 2 funcref)
-  (elem (;0;) (i32.const 0) func 0)
-  (elem (;1;) (i32.const 1) func 1)
+  (; also possible instead
+      (table 2 funcref)
+      (elem (i32.const 0) func 0)
+      (elem (i32.const 1) func 1)
+  ;)
+  (elem func 1)
 )
