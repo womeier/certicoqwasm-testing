@@ -361,10 +361,6 @@ var callRuntimeCallbacks = callbacks => {
 
 var noExitRuntime = Module["noExitRuntime"] || true;
 
-var stackRestore = val => __emscripten_stack_restore(val);
-
-var stackSave = () => _emscripten_stack_get_current();
-
 var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder("utf8") : undefined;
 
 /**
@@ -432,14 +428,38 @@ var ___assert_fail = (condition, filename, line, func) => {
 
 var __emscripten_memcpy_js = (dest, src, num) => HEAPU8.copyWithin(dest, src, src + num);
 
-var abortOnCannotGrowMemory = requestedSize => {
- abort("OOM");
+var _emscripten_date_now = () => Date.now();
+
+var getHeapMax = () =>  2147483648;
+
+var growMemory = size => {
+ var b = wasmMemory.buffer;
+ var pages = (size - b.byteLength + 65535) / 65536;
+ try {
+  wasmMemory.grow(pages);
+  updateMemoryViews();
+  return 1;
+ } /*success*/ catch (e) {}
 };
 
 var _emscripten_resize_heap = requestedSize => {
  var oldSize = HEAPU8.length;
  requestedSize >>>= 0;
- abortOnCannotGrowMemory(requestedSize);
+ var maxHeapSize = getHeapMax();
+ if (requestedSize > maxHeapSize) {
+  return false;
+ }
+ var alignUp = (x, multiple) => x + (multiple - x % multiple) % multiple;
+ for (var cutDown = 1; cutDown <= 4; cutDown *= 2) {
+  var overGrownHeapSize = oldSize * (1 + .2 / cutDown);
+  overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296);
+  var newSize = Math.min(maxHeapSize, alignUp(Math.max(requestedSize, overGrownHeapSize), 65536));
+  var replacement = growMemory(newSize);
+  if (replacement) {
+   return true;
+  }
+ }
+ return false;
 };
 
 var runtimeKeepaliveCounter = 0;
@@ -568,68 +588,10 @@ var stringToUTF8OnStack = str => {
  return ret;
 };
 
-var getCFunc = ident => {
- var func = Module["_" + ident];
- return func;
-};
-
-var writeArrayToMemory = (array, buffer) => {
- HEAP8.set(array, buffer);
-};
-
-/**
-     * @param {string|null=} returnType
-     * @param {Array=} argTypes
-     * @param {Arguments|Array=} args
-     * @param {Object=} opts
-     */ var ccall = (ident, returnType, argTypes, args, opts) => {
- var toC = {
-  "string": str => {
-   var ret = 0;
-   if (str !== null && str !== undefined && str !== 0) {
-    ret = stringToUTF8OnStack(str);
-   }
-   return ret;
-  },
-  "array": arr => {
-   var ret = stackAlloc(arr.length);
-   writeArrayToMemory(arr, ret);
-   return ret;
-  }
- };
- function convertReturnValue(ret) {
-  if (returnType === "string") {
-   return UTF8ToString(ret);
-  }
-  if (returnType === "boolean") return Boolean(ret);
-  return ret;
- }
- var func = getCFunc(ident);
- var cArgs = [];
- var stack = 0;
- if (args) {
-  for (var i = 0; i < args.length; i++) {
-   var converter = toC[argTypes[i]];
-   if (converter) {
-    if (stack === 0) stack = stackSave();
-    cArgs[i] = converter(args[i]);
-   } else {
-    cArgs[i] = args[i];
-   }
-  }
- }
- var ret = func(...cArgs);
- function onDone(ret) {
-  if (stack !== 0) stackRestore(stack);
-  return convertReturnValue(ret);
- }
- ret = onDone(ret);
- return ret;
-};
-
 var wasmImports = {
  /** @export */ __assert_fail: ___assert_fail,
  /** @export */ _emscripten_memcpy_js: __emscripten_memcpy_js,
+ /** @export */ emscripten_date_now: _emscripten_date_now,
  /** @export */ emscripten_resize_heap: _emscripten_resize_heap,
  /** @export */ exit: _exit,
  /** @export */ fd_close: _fd_close,
@@ -641,8 +603,6 @@ var wasmExports = createWasm();
 
 var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports["__wasm_call_ctors"])();
 
-var _pp = Module["_pp"] = a0 => (_pp = Module["_pp"] = wasmExports["pp"])(a0);
-
 var _main = Module["_main"] = (a0, a1) => (_main = Module["_main"] = wasmExports["__main_argc_argv"])(a0, a1);
 
 var __emscripten_stack_restore = a0 => (__emscripten_stack_restore = wasmExports["_emscripten_stack_restore"])(a0);
@@ -652,8 +612,6 @@ var __emscripten_stack_alloc = a0 => (__emscripten_stack_alloc = wasmExports["_e
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports["emscripten_stack_get_current"])();
 
 var dynCall_jiji = Module["dynCall_jiji"] = (a0, a1, a2, a3, a4) => (dynCall_jiji = Module["dynCall_jiji"] = wasmExports["dynCall_jiji"])(a0, a1, a2, a3, a4);
-
-Module["ccall"] = ccall;
 
 var calledRun;
 
