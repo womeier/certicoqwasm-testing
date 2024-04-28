@@ -2,6 +2,7 @@
   (type (;0;) (func (param i32 i32) (result i32)))
   (type (;1;) (func (param i32 (ref any)) (result i32)))
   (type (;2;) (struct (field i32 i32)))
+  (type (;3;) (func (param i32) (result (ref any))))
 
   (export "add" (func 0))
   (func (;0;) (type 0)
@@ -54,6 +55,19 @@
 
     unreachable
     )
+
+  (export "wrap_i31" (func 3))
+  (func (;3;) (type 3)
+    local.get 0
+    ref.i31
+    return)
+
+  (export "wrap_struct" (func 4))
+  (func (;4;) (type 3)
+    local.get 0
+    i32.const 0
+    struct.new 2
+    return)
 
   (; also possible instead
       (table 2 funcref)
