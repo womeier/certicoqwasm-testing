@@ -11,6 +11,8 @@ foo.wasm:
 #	wasm-tools parse foo-tail.wat -o foo.wasm
 
 foo_run: clean foo.wasm
+	wasm-tools parse foo.wasm --wat -o foo.wat
+	wasm-tools validate --features all foo.wat
 	node --experimental-wasm-return_call foo.js
 
 foo_run_wasmtime: clean
