@@ -85,6 +85,7 @@ def print_Z_sexp(value, memory, store):
 
         arg = load_i32(value + 4, memory, store)
         print_positive_sexp(arg, memory, store)
+        write(")")
 
 def print_prod(print_fst, print_snd):
     def print_prod_aux(value, memory, store):
