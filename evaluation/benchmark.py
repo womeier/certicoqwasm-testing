@@ -73,27 +73,22 @@ def get_engine_version(engine):
         exit(1)
 
 
-def program_opt_name(program, flag):
-    if flag[0] == "-":
-        if flag[1] == "-":
-            return f"{program}-opt_{flag[2:]}"
-        else:
-            return f"{program}-opt_{flag[1:]}"
-    else:
-        return f"{program}-unexpected-{flag}"
+def program_opt_name(program, flags):
+    flags = map(lambda f: f.replace("-", ""), flags)
+    return f"{program}-opt_{'-'.join(flags)}"
 
 
-def create_optimized_programs(folder, flag):
-    print(f"Creating programs optimized with wasm-opt {flag} in {folder}.")
+def create_optimized_programs(folder, flags):
+    print(f"Creating programs optimized with wasm-opt {' '.join(flags)} in {folder}.")
     for program in tqdm(programs):
-        program_opt = program_opt_name(program, flag)
+        program_opt = program_opt_name(program, flags)
         path_orig = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
         path_opt = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program_opt}.wasm")
         if not os.path.exists(path_opt):
             subprocess.run(
                 [
                     "wasm-opt",
-                    flag,
+                    *flags,
                     "--enable-tail-call",
                     "--enable-reference-types",
                     "--enable-gc",
@@ -245,7 +240,7 @@ def org_table(tests, measure, results):
 @click.option("--memory-usage", is_flag=True, help="Print lin.mem. used", default=False)
 @click.option("--binary-size", is_flag=True, help="Print binary size", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", multiple=True, required=True)
-@click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag")
+@click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag", multiple=True)
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
 @click.option("--print-latex-table", is_flag=True, help="Print results as latex table", default=False)
 @click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)
@@ -263,8 +258,8 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
         f_name = pathlib.PurePath(f).name
 
         description = get_info(f.strip())
-        if wasm_opt is not None:
-            description = description + f" ({wasm_opt})"
+        if wasm_opt:
+            description = description + f" ({' '.join(wasm_opt)})"
         engine_version = get_engine_version(engine)
         print(f"Running {description}, avg. of {runs} runs with {engine_version}.")
 
@@ -277,7 +272,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
                 print(f"Didn't find {path}, skipping.")
                 continue
 
-            if wasm_opt is not None:
+            if wasm_opt:
                 program = program_opt_name(program, wasm_opt)
                 path = f"{f}/CertiCoq.Benchmarks.tests.{program}.wasm"
                 if not os.path.exists(path):
