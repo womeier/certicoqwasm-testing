@@ -1,85 +1,8 @@
-const fs = require('node:fs');
+import { print_i63, print_compare, print_bool, print_nat_sexp, print_nat_notation, print_list_sexp, print_list_notation, print_option, print_prod, print_positive_sexp, print_N_sexp, print_Z_sexp, print_compcert_byte_sexp } from './evaluation/pp.js';
 
-const bytes = fs.readFileSync(__dirname + '/sha.wasm');
+import * as fs from 'fs';
 
-const print_positive_sexp = (value, dataView) => {
-  if (value & 1) {
-    process.stdout.write('xH');
-  } else {
-    const tag = dataView.getInt32(value, true);
-    switch (tag) {
-      case 0: {
-      process.stdout.write('(xI ');
-      break;
-      }
-
-      case 1: {
-      process.stdout.write('(xO ');
-      break;
-      }
-    }
-
-    const argument = dataView.getInt32(value + 4, true);
-    print_positive_sexp(argument, dataView);
-    process.stdout.write(')');
-  }
-};
-
-const print_Z_sexp = (value, dataView) => {
-  if (value & 1) {
-    process.stdout.write('Z0');
-  } else {
-    const tag = dataView.getInt32(value, true);
-    switch (tag) {
-      case 0: {
-        process.stdout.write('(Zpos ');
-        break;
-      }
-
-      case 1: {
-        process.stdout.write('(Zneg ');
-        break;
-      }
-    }
-
-    const argument = dataView.getInt32(value + 4, true);
-    print_positive_sexp(argument, dataView);
-    process.stdout.write(')');
-  }
-};
-
-const print_compcert_byte_sexp = (value, dataView) => {
-  process.stdout.write('(mkint ');
-  const argument = dataView.getInt32(value + 4, true);
-  print_Z_sexp(argument, dataView);
-  process.stdout.write(')');
-};
-
-const print_list_sexp = (value, dataView, print_element) => {
-  if (value & 1) {
-    switch (value >> 1) {
-      case 0: {
-        process.stdout.write('nil');
-        break;
-      }
-    }
-  } else {
-    const tag = dataView.getInt32(value, true);
-    switch (tag) {
-      case 0: {
-        process.stdout.write('(cons ');
-        const head = dataView.getInt32(value + 4, true);
-        print_element(head, dataView);
-        process.stdout.write(' ');
-        const tail = dataView.getInt32(value + 8, true);
-        print_list_sexp(tail, dataView, print_element);
-        process.stdout.write(')');
-        break;
-      }
-    }
-  }
-};
-
+const bytes = fs.readFileSync('./sha.wasm');
 const print_sha = (value, dataView) => print_list_sexp(value, dataView, print_compcert_byte_sexp);
 
 const importObject = {

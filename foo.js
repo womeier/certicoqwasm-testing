@@ -1,6 +1,5 @@
-const fs = require('node:fs');
-
-const bytes = fs.readFileSync(__dirname + '/foo.wasm');
+import * as fs from 'fs';
+const bytes = fs.readFileSync('./foo.wasm');
 
 const print_bool = (value, dataView) => {
   if (value & 1) {
@@ -15,7 +14,7 @@ const print_bool = (value, dataView) => {
         break;
       }
     }
-  } else {}
+  }
 };
 
 const importObject = {
