@@ -56,7 +56,7 @@ else:
 print("\nRunning all binaries and checking for correct result printed to stdout.")
 
 for program in tqdm(programs):
-    expected_res = open(f"./results/{program}.txt").read()
+    expected_res = open(f"./results/{program}.txt").read().strip().split("\n")
     for folder in folders:
         # RUN wasm-opt
         program_opt = f"{program}-opt_coalesce-locals"
@@ -85,9 +85,8 @@ for program in tqdm(programs):
         # RUN
         r = subprocess.run(
             [
-                "node",
-                "--experimental-wasm-return_call",
-                "./run-node.js",
+                "python3",
+                "./run-wasmtime.py",
                 f"./binaries/{folder}/",
                 program_opt,
             ],
@@ -101,7 +100,7 @@ for program in tqdm(programs):
             exit()
 
         stdout = r.stdout.decode("utf-8")
-        if expected_res not in stdout:
+        if all(map(lambda res: res not in stdout, expected_res)):
             print("Didn't find expected result in stdout.")
             print("STDOUT: " + stdout)
             print("STDERR: " + r.stderr.decode("utf-8"))

@@ -1,0 +1,2 @@
+(pair (Zpos (xI (xO (xI (xI (xO (xO (xO xH)))))))) (Zpos (xO (xO (xI (xI (xI (xI xH))))))))
+((Zpos (xI (xO (xI (xI (xO (xO (xO xH)))))))), (Zpos (xO (xO (xI (xI (xI (xI xH))))))))
