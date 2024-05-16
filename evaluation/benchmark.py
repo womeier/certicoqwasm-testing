@@ -46,6 +46,7 @@ def get_info(path):
         "non-cps-ifs-unnested-mrch-22-24": "non-cps (same as feb-26-24, update MC), don't nest if statements",
         "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function",
         "non-cps-br_if-apr-12-24": "non-cps (same as mrch-24-24), br_if instead of if return",
+        "non-cps-wasmgc-may-16-24": "WasmGC demo (unverified), based on apr-12-24",
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
@@ -128,10 +129,13 @@ def wasmtime_compile_programs(folder, wasmopt_flag):
             )
 
 
-def single_run_node(folder, program, verbose):
+def single_run_node(folder, program, wasmgc_cast_nochecks, verbose):
+    cast_flag = ["--experimental-wasm-assume-ref-cast-succeeds"] if wasmgc_cast_nochecks else []
+
     r = subprocess.run(
         [
             NODE,
+            *cast_flag,
             "--experimental-wasm-return_call",
             "--experimental-wasm-typed_funcref",
             "--experimental-wasm-gc",
@@ -241,10 +245,11 @@ def org_table(tests, measure, results):
 @click.option("--binary-size", is_flag=True, help="Print binary size", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", multiple=True, required=True)
 @click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag", multiple=True)
+@click.option("--wasmgc-cast-nochecks", is_flag=True, help="Disables runtime checks for casts.")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
 @click.option("--print-latex-table", is_flag=True, help="Print results as latex table", default=False)
 @click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)
-def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, print_latex_table, print_org_table):
+def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_cast_nochecks, verbose, print_latex_table, print_org_table):
     if engine not in ["wasmtime", "wasmtime-compile", "node"]:
         print("Expected wasmtime or node runtime.")
         exit(1)
@@ -293,7 +298,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, verbose, wasm_opt, 
             for run in range(runs):
                 res = None
                 if engine == "node":
-                    res = single_run_node(f, program, verbose)
+                    res = single_run_node(f, program, wasmgc_cast_nochecks, verbose)
 
                 elif engine == "wasmtime":
                     res = single_run_wasmtime(f, program, verbose)
