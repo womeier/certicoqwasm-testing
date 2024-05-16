@@ -24,6 +24,7 @@ The script `wasm_to_coq.py` takes a given .wasm file and outputs the byte-list t
 
 ### Requirements
 - CertiCoq with wasm backend: [certicoqwasm](https://github.com/womeier/certicoqwasm).
-- Node.js
-- Python3
-- WebAssembly toolkit (wabt in Ubuntu)
+- Node.js (version 22 or higher)
+- python 3
+- binaryen (version 117 or higher)
+- wasm-tools: [installation](https://github.com/bytecodealliance/wasm-tools)
