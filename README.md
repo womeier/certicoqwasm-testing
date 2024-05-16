@@ -27,4 +27,5 @@ The script `wasm_to_coq.py` takes a given .wasm file and outputs the byte-list t
 - Node.js (version 22 or higher)
 - python 3
 - binaryen (version 117 or higher)
+- Rust (e.g. 1.77)
 - wasm-tools: [installation](https://github.com/bytecodealliance/wasm-tools)
