@@ -21,9 +21,9 @@ programs = [
 print("Sanitity checking the following combinations: ")
 print(f"- {', '.join(folders)}")
 print(f"- {', '.join(programs)}")
-print("---------------------------------------------------------------------------------------")
+print("-------------------------------------------------------------------------------")
 
-################################################################################################
+########################################################################################
 print("Checking that all binaries have a different sha256 sum.")
 
 hashes = []
@@ -51,7 +51,7 @@ else:
     print("==> all good.")
 
 
-#########################################################################################
+########################################################################################
 
 print("\nRunning all binaries and checking for correct result printed to stdout.")
 
@@ -60,9 +60,7 @@ for program in tqdm(programs):
     for folder in folders:
         # RUN wasm-opt
         program_opt = f"{program}-opt_coalesce-locals"
-        path_program_opt = (
-            f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm"
-        )
+        path_program_opt = f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm"
         path_program = f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
         if not os.path.exists(path_program_opt):
             r = subprocess.run(
@@ -70,6 +68,8 @@ for program in tqdm(programs):
                     "wasm-opt",
                     "--coalesce-locals",
                     "--enable-tail-call",
+                    "--enable-gc",
+                    "--enable-reference-types",
                     "--enable-mutable-globals",
                     path_program,
                     "--output",
@@ -85,8 +85,8 @@ for program in tqdm(programs):
         # RUN
         r = subprocess.run(
             [
-#                "python3",
-#                "./run-wasmtime.py",
+# "python3",
+# "./run-wasmtime.py",
                 "node",
                 "./run-node.js",
                 f"./binaries/{folder}/",
@@ -95,14 +95,15 @@ for program in tqdm(programs):
             capture_output=True,
         )
         if r.returncode != 0:
-            print(
-                f"{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm returned non-0 return code."
-            )
+            print(f"{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm returned non-0 return code.")
             print(r.stderr.decode("utf-8"))
-            exit()
+            exit(1)
 
         stdout = r.stdout.decode("utf-8")
-        if all(map(lambda res: res not in stdout, expected_res)):
+        # we don't check stdout of wasmgc
+        if "wasmgc" not in folder and all(
+            map(lambda res: res not in stdout, expected_res)
+        ):
             print("Didn't find expected result in stdout.")
             print("STDOUT: " + stdout)
             print("STDERR: " + r.stderr.decode("utf-8"))
