@@ -1,3 +1,9 @@
+import {join, dirname} from "path";
+import {readFile} from "fs/promises";
+import {spawnSync} from "child_process";
+import * as process from "process";
+import * as fs from "fs";
+
 (function (a) {
     typeof globalThis !== "object" && (this ? b() : (a.defineProperty(a.prototype, "_T_", { configurable: true, get: b }), _T_));
     function b() {
@@ -10,9 +16,9 @@
     "use strict";
     let { src: r, generated: C } = a;
     function F(a) {
-        const b = require("path"),
-            c = b.join(b.dirname(require.main.filename), a);
-        return require("fs/promises").readFile(c);
+	console.log(process.argv[1]);
+        const c = join(dirname(process.argv[1]), a);
+        return readFile(c);
     }
     function B(a) {
         const b = globalThis?.document?.currentScript?.src,
@@ -47,7 +53,7 @@
             fmod: (a, b) => a % b,
         },
         t = [Float32Array, Float64Array, Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, Int32Array, Int32Array, Int32Array, Float32Array, Float64Array, Uint8Array, Uint8ClampedArray];
-    const f = g && require("fs");
+    const f = g && fs;
     let e = f?.constants,
         H = f ? [e.RDONLY, e.O_WRONLY, e.O_APPEND, e.O_CREAT, e.O_TRUNC, e.O_EXCL, e.O_NONBLOCK] : [];
     var b = { map: new WeakMap(), set: new Set(), finalization: new FinalizationRegistry((a) => b.set.delete(a)) };
@@ -308,7 +314,7 @@
             argv: () => (g ? d.argv.slice(1) : ["a.out"]),
             getenv: (a) => (g ? d.env[a] : null),
             system: (a) => {
-                var b = require("child_process").spawnSync(a, { shell: true, stdio: "inherit" });
+                var b = spawnSync(a, { shell: true, stdio: "inherit" });
                 if (b.error) throw b.error;
                 return b.signal ? 255 : b.status;
             },
@@ -353,11 +359,11 @@
         d = globalThis.process;
     if (d && d.on) d.on("uncaughtException", (a, b) => n(a));
     else if (globalThis.addEventListener) globalThis.addEventListener("error", (a) => a.error && n(a.error));
-const start_time = Date.now();
-await i();
-const end_time = Date.now();
-const exec_time = end_time - start_time;
-console.log(`demo2 execution time (including pretty printing): ${exec_time} ms`);
+    const start_time = Date.now();
+    await i();
+    const end_time = Date.now();
+    const exec_time = end_time - start_time
+    console.log(`demo2 execution time (including pretty printing): ${exec_time} ms`);
 })(
     (function (a) {
         "use strict";
