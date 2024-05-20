@@ -29,6 +29,7 @@ programs = [
     "ack_3_9",
     "sm_gauss_nat",
     "sm_gauss_N",
+#    "sm_gauss_PrimInt", # comment in for non-cps-primops-may-21-24
 ]
 
 
@@ -47,6 +48,7 @@ def get_info(path):
         "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function",
         "non-cps-br_if-apr-12-24": "non-cps (same as mrch-24-24), br_if instead of if return",
         "non-cps-wasmgc-may-16-24": "WasmGC demo (unverified), based on apr-12-24",
+        "non-cps-primops-may-21-24": "new constr. repr. + primops, based on apr-12-24",
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
