@@ -44,8 +44,8 @@ Fixpoint mapAlternate {A B} (f g : A -> B) (l : list A) : list B :=
 (* Definition foo := map odd [100 ; 200 ; 103 ; 4]. *)
 
 (* The result should be a bool so pp works *)
-Definition foo := fold_left andb (map odd (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 nil)))))) true.
-(* Definition foo := fold_left andb (map odd [1; 3; 5; 8]) true.*)
+(* Definition foo := fold_left andb (map odd (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 nil)))))) true. *)
+Definition foo := fold_left andb (map odd [1; 3; 5; 8]) true.
 
 CertiCoq Show IR -cps -file "foo" foo.
 CertiCoq Compile Wasm -cps -file "foo" foo.
