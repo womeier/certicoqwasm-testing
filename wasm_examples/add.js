@@ -1,5 +1,5 @@
-const fs = require('fs');
-const bytes = fs.readFileSync(__dirname + '/add.wasm');
+import * as fs from "fs";
+const bytes = fs.readFileSync('./add.wasm');
 const val_1 = 41;
 const val_2 = 1;
 

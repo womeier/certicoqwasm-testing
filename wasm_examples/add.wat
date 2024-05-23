@@ -1,6 +1,6 @@
 (module
   (type (;0;) (func (param i32 i32) (result i32)))
-  (type (;1;) (func (param i32 (ref any)) (result i32)))
+  (type (;1;) (func (param (ref any)) (result i32)))
   (type (;2;) (struct (field i32 i32)))
   (type (;3;) (func (param i32) (result (ref any))))
 
@@ -13,16 +13,14 @@
 
   (; actual addition ;)
   (func (;1;) (type 0)
-    i32.const 41 (; indicates i31 ;)
-    local.get 0 (; first parameter;)
+    local.get 0
     ref.i31
-    call 2
+    call 2 (; identity ;)
 
-    i32.const 42  (; indicates struct ;)
     i32.const 1
-    local.get 1 (; snd parameter ;)
+    local.get 1
     struct.new 2
-    call 2
+    call 2 (; identity ;)
 
 (;    i32.const 43  indicates func ref
     ref.func 1
@@ -32,22 +30,16 @@
 
   (func (;2;) (type 1)
     local.get 0
-    i32.const 41
-    i32.eq
+    ref.test (ref i31)
     if
-      (; local_0 = 0 -> local_1 is i31 ;)
-      local.get 1
+      (; is i31 ;)
+      local.get 0
       ref.cast (ref i31)
       i31.get_u
       return
-    end
-
-    local.get 0
-    i32.const 42
-    i32.eq
-    if
+    else
       (; is struct ;)
-      local.get 1
+      local.get 0
       ref.cast (ref 2)
       struct.get 2 1
       return
