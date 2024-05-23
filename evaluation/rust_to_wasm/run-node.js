@@ -1,8 +1,8 @@
-const fs = require("fs");
+import * as fs from 'fs';
 var args = process.argv.slice(2);
 if (args.length != 2) {
     console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
-    console.log("e.g.: $ node --experimental-wasm-return_call run-node.js ./binaries/naive vs_easy");
+    console.log("e.g.: $ node run-node.js ./binaries/naive vs_easy");
     process.exit(1);
 }
 let path = args[0];
@@ -11,11 +11,10 @@ if (path.charAt(path.length - 1) != "/") { path = path + "/" }
 let program = args[1];
 
 let imports = {};
-imports['__wbindgen_placeholder__'] = module.exports;
 let wasm;
-const { TextDecoder } = require(`util`);
+import * as util from "util";
 
-let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+let cachedTextDecoder = new util.TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
 
 cachedTextDecoder.decode();
 
@@ -37,7 +36,8 @@ let start_pp;
 let stop_pp;
 let time_pp;
 // import_name writestring is inserted in wasm binary by script
-module.exports.writestring = function(arg0, arg1) {
+imports['__wbindgen_placeholder__'] = {}
+imports['__wbindgen_placeholder__'].writestring = function(arg0, arg1) {
     start_pp = Date.now();
     console.log(getStringFromWasm0(arg0, arg1));
     stop_pp = Date.now();

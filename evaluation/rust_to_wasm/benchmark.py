@@ -39,8 +39,6 @@ def single_run_node(folder, program, verbose):
     r = subprocess.run(
         [
             NODE,
-            #            "--experimental-wasm-return_call",
-            #            "--no-wasm-bounds-checks",
             "--stack-size=1000000",
             "./run-node.js",
             folder,

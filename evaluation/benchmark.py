@@ -138,10 +138,6 @@ def single_run_node(folder, program, wasmgc_cast_nochecks, verbose):
         [
             NODE,
             *cast_flag,
-            # "--experimental-wasm-return_call",
-            # "--experimental-wasm-typed_funcref",
-            # "--experimental-wasm-gc",
-            # "--no-wasm-bounds-checks",
             "./run-node.js",
             folder,
             program,
