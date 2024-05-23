@@ -3,7 +3,7 @@
 This repo contains scripts and examples for testing [certicoqwasm](https://github.com/womeier/certicoqwasm).
 
 ## Requirements & Setup
-Note, that the CertiCoq-Wasm is not necessary to run the benchmarks.
+Note, that CertiCoq-Wasm is not necessary to run the benchmarks.
 - CertiCoq with wasm backend: [certicoqwasm](https://github.com/womeier/certicoqwasm).
 - Node.js (version 22 or higher)
 - python 3
