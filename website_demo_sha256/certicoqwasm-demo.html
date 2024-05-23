@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> CertiCoq-Wasm demo  </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<noscript> JavaScript is required for this demo, please enable it in your browser settings. </noscript>
+<style>
+body {
+margin-left: 3rem;
+margin-right: 3rem;
+}
+table {
+  margin-top: 2rem;
+}
+.info {
+  margin-top:2rem;
+  width:700px;
+}
+#div-demo {
+  margin-top:4rem;
+}
+
+#init-error {
+  margin-top:3rem;
+  width:700px;
+  padding-top:10px;
+  padding-left:10px;
+  padding-rigth:10px;
+  padding-bottom:10px;
+  border-color:red;
+  border-width:3px;
+  border-style:solid;
+  display:none;
+}
+</style>
+
+<div class="info">
+  <h1> sha256 demo </h1>
+  This demo allows you to compute the <a href="https://en.wikipedia.org/wiki/SHA-2">sha256 sum</a> using the <a href="https://dl.acm.org/doi/pdf/10.1145/2701415">verified</a> implementation by Andrew Appel,
+  compiled to Wasm using <a href="https://womeier.de/files/certicoqwasm-coqpl24-abstract.pdf">CertiCoq-Wasm</a>.
+</div>
+
+<p id="init-error">
+
+<div id="div-demo" style="display:none">
+  <input type="text" id="sha-input" value="" placeholder="Enter string and press Enter" autofocus>
+  <br>
+  <table>
+  <tr>
+    <td> Our result: </td>
+    <td><span style="padding-left:20px" id="sha-res-ours"></span></td>
+  </tr>
+  <tr>
+    <td> Browser crypto lib: </td>
+    <td> <span style="padding-left:20px" id="sha-res-lib"></span></td>
+  </tr>
+  </table>
+</div>
+
+<script type="module">
+  import { tailCall } from "https://womeier.de/files/certicoqwasm-demo/wasm-feature-detect.js";
+
+  let wasmInstance = null;
+
+  function showError (errorMsg) {
+    document.getElementById("init-error").innerHTML = errorMsg;
+    document.getElementById("init-error").style.display = "block";
+  }
+
+  if (!await tailCall()) {
+    showError("Your browser doesn't support Wasm tail calls, we recommend a recent version of Chrome or Firefox, " +
+    "see <a href='https://webassembly.org/features/'>here</a> for browser versions that support Wasm tail calls.");
+  } else {
+    // show demo
+    console.log("Tail calls supported.")
+    let input_elem = document.getElementById("sha-input");
+
+    // relict, not used currently
+    function write_int (value) {}
+    function write_char (value) {}
+    let importObject = {
+      env: {
+        write_char: write_char,
+        write_int: write_int,
+      }
+    };
+    // await fetch("https://womeier.de/files/certicoqwasm-demo/sha_fast_coalesce_locals.wasm")
+    // to fix CORS: chromium --disable-web-security --user-data-dir=. index.html
+    await fetch("./files/certicoqwasm-demo/sha_fast_coalesce_locals.wasm")
+      .then(response => response.arrayBuffer())
+      .then(buffer => WebAssembly.compile(buffer))
+      .then(module => {return new WebAssembly.Instance(module, importObject)})
+      .then(instance => {wasmInstance = instance; console.log("Compiled successfully.")},
+            error => showError("Failed to load and instantiate wasm file, please email Wolfgang."));
+
+    if (wasmInstance != null) {
+      console.log("Initialization successful.")
+      document.getElementById("div-demo").style.display = "block";
+      input_elem.addEventListener("change", shaInputHandler);
+      input_elem.focus();
+      // compute shasum for empty string
+      // document.getElementById("sha-input").dispatchEvent(new Event("change"));
+    }
+  }
+
+  function string_of_bytes_list(val, dataView) {
+    if (val & 1) {
+      // nil
+      return "";
+    } else {
+      const tag = dataView.getInt32(val, true);
+      if (tag == 0) {
+        // cons
+        const head = dataView.getInt32(val+4, true) >> 1;
+	const tail = dataView.getInt32(val+8, true);
+        // padStart: print leading 0
+        return head.toString(16).padStart(2, '0') + string_of_bytes_list(tail, dataView);
+      }
+    }
+  }
+
+  async function shaInputHandler() {
+    let string = this.value;
+    let bytes = new TextEncoder("utf-8").encode(string);
+    // console.log(bytes);
+
+    const start_browser = Date.now();
+    await sha256_browser(bytes).then(
+      function(value) {
+        const end_browser = Date.now();
+        const time_browser = end_browser - start_browser;
+        document.getElementById("sha-res-lib").innerHTML = `${value} (in ${time_browser} ms)`
+      },
+      function(error) {
+        document.getElementById("sha-res-lib").innerHTML = `ERROR: ${error}`
+      }
+    )
+
+   const start_ours = Date.now();
+   await sha256_ours(bytes).then(
+      function(value) {
+        const end_ours = Date.now();
+        const time_ours = end_ours - start_ours;
+        document.getElementById("sha-res-ours").innerHTML = `${value} (in ${time_ours} ms)`
+      },
+      function(error) {
+        document.getElementById("sha-res-ours").innerHTML = `ERROR: ${error}`
+      }
+    )
+  }
+
+  // compute sha256 sum with browser crypto lib
+  async function sha256_browser(bytes) {
+    const buf = await crypto.subtle.digest("SHA-256", bytes);
+    const hashArray = Array.from(new Uint8Array(buf));
+
+    // convert bytes to hex string
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+  }
+
+  //***********************************************************************************************************
+
+  async function sha256_ours(bytes) {
+    if (bytes.length > 10000) {
+      return "ERROR: string length limited to 10k characters"
+    }
+    // bytes_used is export name of global_mem_ptr (ptr we increase after every memory allocation)
+    // TODO performance optimization: only run the main function once at initialization, remember the global_mem_ptr
+    // and reset the global_mem_ptr to the remembered value before every computation of the sha256 sum, thus freeing the
+    // memory used by the previous sha256 computation
+    wasmInstance.exports.bytes_used.value = 0;
+    await wasmInstance.exports.main_function();
+    let res = wasmInstance.exports.result.value;
+    let mem = wasmInstance.exports.memory;
+    let array = new Uint32Array(mem.buffer);
+    // console.log("TAG: " + array[res/4] + ", FIDX: " + array[res/4 + 1]);
+    // prints fidx of _97__CertiCoq_Benchmarks_tests_sha_fast_198
+    let envAddr = array[res/4 + 2];
+    // console.log(envAddr);
+
+    // grow linear mem by some bytes: each cons needs 3 i32s = 3*4 bytes + 42 for good measure
+    await wasmInstance.exports.grow_mem_if_necessary(4 * 3 * bytes.length + 42);
+    if (wasmInstance.exports.result_out_of_mem == 1) {
+      console.log("Growing linear mem failed.");
+      return "ERROR: ran out of memory";
+    }
+
+    let tag_cons = 0;
+    let tag_nil = 1;
+
+    let current = tag_nil;
+    for (var i = bytes.length - 1; i >= 0; i--) {
+      let next = wasmInstance.exports.bytes_used.value;
+      let tag_byte = bytes[i] * 2 + 1;
+      // console.log(tag_byte);
+      array[next/4] = tag_cons;
+      array[next/4 + 1] = tag_byte;
+      array[next/4 + 2] = current;
+      current = next;
+      wasmInstance.exports.bytes_used.value += 12;
+    }
+
+    try {
+      // console.log(wasmInstance.exports);
+      await wasmInstance.exports._97__CertiCoq_Benchmarks_tests_sha_fast_198(envAddr, current);
+      if (wasmInstance.exports.result_out_of_mem.value == 1) {
+        console.log("Computing sha_fast ran out of memory.")
+        return "ERROR: ran out of memory";
+      } else {
+        const res = wasmInstance.exports.result.value;
+        const memory = wasmInstance.exports.memory;
+        const dataView = new DataView(memory.buffer);
+        let resultString = string_of_bytes_list(res, dataView);
+        // console.log(resultString);
+        return resultString;
+      }
+    } catch (err) {
+      console.log(err);
+      return "ERROR";
+    }
+  }
+
+</script>
+
+</body>
+</html>
