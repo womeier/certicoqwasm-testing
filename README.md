@@ -53,20 +53,21 @@ In `evaluation/rust_to_wasm`, run:
 ```
 ./benchmark.py --folder ./binaries/unchecked_arith/
 ```
+See [here](./evaluation/rust_to_wasm/setup.md) for more information.
 
 ## Performance evaluation OCaml -> Wasm binaries
 In `evaluation/wasm_of_ocaml`, run:
 ```
 ./benchmark.py --folder ./binaries/
 ```
-See [./evaluation/wasm_of_ocaml/setup.md](./evaluation/wasm_of_ocaml/setup.md) for more information
+See [here](./evaluation/wasm_of_ocaml/setup.md) for more information.
 
 ## Performance evaluation C -> Wasm binaries
 In `evaluation/c_to_wasm_emscripten`, run:
 ```
 ./benchmark.py --folder ./binaries/
 ```
-See [./evaluation/c_to_wasm_emscripten/setup.md](./evaluation/c_to_wasm_emscripten/setup.md) for more information
+See [here](./evaluation/c_to_wasm_emscripten/setup.md) for more information.
 
 ## Demos
 
