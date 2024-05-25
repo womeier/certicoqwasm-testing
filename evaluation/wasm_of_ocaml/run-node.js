@@ -4,6 +4,17 @@ import {spawnSync} from "child_process";
 import * as process from "process";
 import * as fs from "fs";
 
+var args = process.argv.slice(2);
+if (args.length != 2) {
+    console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
+    console.log("e.g.: $ node run-node.js ./binaries/naive vs_easy");
+    process.exit(1);
+}
+let path = args[0];
+if (path.charAt(path.length - 1) != "/") { path = path + "/" }
+
+let program = args[1];
+
 (function (a) {
     typeof globalThis !== "object" && (this ? b() : (a.defineProperty(a.prototype, "_T_", { configurable: true, get: b }), _T_));
     function b() {
@@ -349,9 +360,14 @@ import * as fs from "fs";
         },
         k = { test: (a) => +(typeof a === "string"), compare: (a, b) => (a < b ? -1 : +(a > b)), hash: E, decodeStringFromUTF8Array: () => "", encodeStringToUTF8Array: () => 0 };
     const p = Object.assign({ Math: G, bindings: v, js: u, "wasm:js-string": k, "wasm:text-decoder": k, "wasm:text-encoder": k, env: {} }, C),
-        q = { builtins: ["js-string", "text-decoder", "text-encoder"] },
-        L = g ? await WebAssembly.instantiate(await o, p, q) : await WebAssembly.instantiateStreaming(o, p, q);
-    var { caml_callback: c, caml_alloc_tm: m, caml_start_fiber: y, caml_handle_uncaught_exception: n, caml_buffer: w, caml_extract_string: x, _initialize: i } = L.instance.exports,
+          q = { builtins: ["js-string", "text-decoder", "text-encoder"] };
+
+    const start_startup = Date.now();
+    const L = await WebAssembly.instantiate(await o, p, q);
+    const stop_startup = Date.now();
+    const time_startup = stop_startup - start_startup;
+
+var { caml_callback: c, caml_alloc_tm: m, caml_start_fiber: y, caml_handle_uncaught_exception: n, caml_buffer: w, caml_extract_string: x, _initialize: i } = L.instance.exports,
         h = w?.buffer,
         I = h && new Uint8Array(h, 0, h.length);
     s = l({ parameters: ["eqref"], results: ["externref"] }, y, { promising: "first" });
@@ -359,11 +375,11 @@ import * as fs from "fs";
         d = globalThis.process;
     if (d && d.on) d.on("uncaughtException", (a, b) => n(a));
     else if (globalThis.addEventListener) globalThis.addEventListener("error", (a) => a.error && n(a.error));
-    const start_time = Date.now();
+    const start_main = Date.now();
     await i();
-    const end_time = Date.now();
-    const exec_time = end_time - start_time
-    console.log(`demo2 execution time (including pretty printing): ${exec_time} ms`);
+    const stop_main = Date.now();
+    const time_main = stop_main - start_main;
+    console.log(`Benchmark wasm_of_ocaml (${path}): {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": ${0}, "program": "${program}"}} ms.`);
 })(
     (function (a) {
         "use strict";
@@ -375,5 +391,5 @@ import * as fs from "fs";
             c = a?.module?.export || a;
         return { strings: ["Undefined_recursive_module", "Assert_failure", "Sys_blocked_io", "Stack_overflow", "Match_failure", "Not_found", "Division_by_zero", "End_of_file", "Invalid_argument", "Failure", "Sys_error", "Out_of_memory"] };
     })(globalThis),
-    src: "demo2.wasm",
+    src: `${path}/${program}.wasm`,
 });

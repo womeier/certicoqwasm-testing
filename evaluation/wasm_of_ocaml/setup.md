@@ -1,11 +1,13 @@
 # Notes on wasm_of_ocaml binaries
 
 - Requires `node` v22.1.0
-- Run with `node <benchmark>.js`
+- Run individual benchmarks with `node run-node.js binaries <benchmark>.js`
 - The result is pretty printed
-- The execution time of the wasm module is printed (note that this includes pretty printing)
-- The ocaml code extracted from the color benchmark does not typecheck, and so is not included here
-- The extraction of the sm_gauss_PrimInt benchmark requires specifying an ocaml implementation for the Uint63 operations, and so is not included here
+- The startup and main execution time of the wasm module is printed (note that the main execution time includes pretty printing, and that the `pp` output is set to 0)
+- The ocaml code extracted from the `color` benchmark does not typecheck, and so is not included here
+- The extraction of the `sm_gauss_PrimInt` benchmark requires specifying an ocaml implementation for the Uint63 operations, and so is not included here
+
+To run all benchmarks and print time, run `python benchmark.py --folder binaries`.
 
 ## Using the `wasm_of_ocaml` compiler
 
