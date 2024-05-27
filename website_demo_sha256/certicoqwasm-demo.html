@@ -121,13 +121,47 @@ table {
     }
   }
 
+  async function bytes_list_of_string(string) {
+    let string_bytes = new TextEncoder("utf-8").encode(string);
+    let mem = wasmInstance.exports.memory;
+    let array = new Uint32Array(mem.buffer);
+
+    // grow linear mem by some bytes: each cons needs 3 i32s = 3*4 bytes
+    let bytes = 4 * 3 * string_bytes.length;
+    let pages = Math.ceil(bytes / 65536)
+    console.log(`Growing memory to provide ${pages} pages`);
+    for (var i = 0; i < pages; i++) {
+      // only grows one page per call
+      await wasmInstance.exports.grow_mem_if_necessary(bytes);
+      if (wasmInstance.exports.result_out_of_mem == 1) {
+        console.log("Growing linear mem failed.");
+        return null;
+//        return "ERROR: ran out of memory";
+      }
+    }
+
+    let tag_cons = 0;
+    let tag_nil = 1;
+
+    let current = tag_nil;
+    for (var i = string_bytes.length - 1; i >= 0; i--) {
+      let next = wasmInstance.exports.bytes_used.value;
+      let tag_byte = string_bytes[i] * 2 + 1;
+      // console.log(tag_byte);
+      array[next/4] = tag_cons;
+      array[next/4 + 1] = tag_byte;
+      array[next/4 + 2] = current;
+      current = next;
+      wasmInstance.exports.bytes_used.value += 12;
+    }
+    return current;
+  }
+
   async function shaInputHandler() {
     let string = this.value;
-    let bytes = new TextEncoder("utf-8").encode(string);
-    // console.log(bytes);
 
     const start_browser = Date.now();
-    await sha256_browser(bytes).then(
+    await sha256_browser(string).then(
       function(value) {
         const end_browser = Date.now();
         const time_browser = end_browser - start_browser;
@@ -139,7 +173,7 @@ table {
     )
 
    const start_ours = Date.now();
-   await sha256_ours(bytes).then(
+   await sha256_ours(string).then(
       function(value) {
         const end_ours = Date.now();
         const time_ours = end_ours - start_ours;
@@ -152,7 +186,8 @@ table {
   }
 
   // compute sha256 sum with browser crypto lib
-  async function sha256_browser(bytes) {
+  async function sha256_browser(string) {
+    let bytes = new TextEncoder("utf-8").encode(string);
     const buf = await crypto.subtle.digest("SHA-256", bytes);
     const hashArray = Array.from(new Uint8Array(buf));
 
@@ -163,12 +198,12 @@ table {
 
   //***********************************************************************************************************
 
-  async function sha256_ours(bytes) {
-    if (bytes.length > 10000) {
+  async function sha256_ours(string) {
+    if (string.length > 10000) {
       return "ERROR: string length limited to 10k characters"
     }
     // bytes_used is export name of global_mem_ptr (ptr we increase after every memory allocation)
-    // TODO performance optimization: only run the main function once at initialization, remember the global_mem_ptr
+    // TODO memory optimization: only run the main function once at initialization, remember the global_mem_ptr
     // and reset the global_mem_ptr to the remembered value before every computation of the sha256 sum, thus freeing the
     // memory used by the previous sha256 computation
     wasmInstance.exports.bytes_used.value = 0;
@@ -181,31 +216,19 @@ table {
     let envAddr = array[res/4 + 2];
     // console.log(envAddr);
 
-    // grow linear mem by some bytes: each cons needs 3 i32s = 3*4 bytes + 42 for good measure
-    await wasmInstance.exports.grow_mem_if_necessary(4 * 3 * bytes.length + 42);
-    if (wasmInstance.exports.result_out_of_mem == 1) {
-      console.log("Growing linear mem failed.");
+    let bytesInput = await bytes_list_of_string(string);
+    if (bytesInput == null) {
+      console.log("Allocating input string ran out of memory");
       return "ERROR: ran out of memory";
     }
 
-    let tag_cons = 0;
-    let tag_nil = 1;
-
-    let current = tag_nil;
-    for (var i = bytes.length - 1; i >= 0; i--) {
-      let next = wasmInstance.exports.bytes_used.value;
-      let tag_byte = bytes[i] * 2 + 1;
-      // console.log(tag_byte);
-      array[next/4] = tag_cons;
-      array[next/4 + 1] = tag_byte;
-      array[next/4 + 2] = current;
-      current = next;
-      wasmInstance.exports.bytes_used.value += 12;
-    }
+    // const memory = wasmInstance.exports.memory;
+    // const dataView = new DataView(memory.buffer);
+    // console.log(string_of_bytes_list(bytesInput, dataView));
 
     try {
       // console.log(wasmInstance.exports);
-      await wasmInstance.exports._97__CertiCoq_Benchmarks_tests_sha_fast_198(envAddr, current);
+      await wasmInstance.exports._97__CertiCoq_Benchmarks_tests_sha_fast_198(envAddr, bytesInput);
       if (wasmInstance.exports.result_out_of_mem.value == 1) {
         console.log("Computing sha_fast ran out of memory.")
         return "ERROR: ran out of memory";
