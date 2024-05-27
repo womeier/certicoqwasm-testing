@@ -121,7 +121,7 @@ table {
     }
   }
 
-  async function bytes_list_of_string(string) {
+  function bytes_list_of_string(string) {
     let string_bytes = new TextEncoder("utf-8").encode(string);
     let mem = wasmInstance.exports.memory;
     let array = new Uint32Array(mem.buffer);
@@ -132,7 +132,7 @@ table {
     console.log(`Growing memory to provide ${pages} pages`);
     for (var i = 0; i < pages; i++) {
       // only grows one page per call
-      await wasmInstance.exports.grow_mem_if_necessary(bytes);
+      wasmInstance.exports.grow_mem_if_necessary(bytes);
       if (wasmInstance.exports.result_out_of_mem == 1) {
         console.log("Growing linear mem failed.");
         return null;
@@ -207,7 +207,7 @@ table {
     // and reset the global_mem_ptr to the remembered value before every computation of the sha256 sum, thus freeing the
     // memory used by the previous sha256 computation
     wasmInstance.exports.bytes_used.value = 0;
-    await wasmInstance.exports.main_function();
+    wasmInstance.exports.main_function();
     let res = wasmInstance.exports.result.value;
     let mem = wasmInstance.exports.memory;
     let array = new Uint32Array(mem.buffer);
@@ -216,7 +216,7 @@ table {
     let envAddr = array[res/4 + 2];
     // console.log(envAddr);
 
-    let bytesInput = await bytes_list_of_string(string);
+    let bytesInput = bytes_list_of_string(string);
     if (bytesInput == null) {
       console.log("Allocating input string ran out of memory");
       return "ERROR: ran out of memory";
