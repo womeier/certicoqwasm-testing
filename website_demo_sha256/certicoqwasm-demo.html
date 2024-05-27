@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-<noscript> JavaScript is required for this demo, please enable it in your browser settings. </noscript>
+<noscript> JavaScript is required for this demo, please please use a browser with JavaScript support such as Firefox or Chrome. </noscript>
 <style>
 body {
 margin-left: 3rem;
@@ -128,7 +128,7 @@ table {
 
     // grow linear mem by some bytes: each cons needs 3 i32s = 3*4 bytes
     let bytes = 4 * 3 * string_bytes.length;
-    let pages = Math.ceil(bytes / 65536)
+    let pages = Math.ceil(bytes / 65536);
     console.log(`Growing memory to provide ${pages} pages`);
     for (var i = 0; i < pages; i++) {
       // only grows one page per call
@@ -237,7 +237,6 @@ table {
         const memory = wasmInstance.exports.memory;
         const dataView = new DataView(memory.buffer);
         let resultString = string_of_bytes_list(res, dataView);
-        // console.log(resultString);
         return resultString;
       }
     } catch (err) {
@@ -245,7 +244,6 @@ table {
       return "ERROR";
     }
   }
-
 </script>
 
 </body>
