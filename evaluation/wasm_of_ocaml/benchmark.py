@@ -94,71 +94,13 @@ def create_optimized_programs(folder, flags):
                 ]
             )
 
-def latex_table(tests, measure, results):
-    rows = [
-        [binary_version]
-        + ["N/A" if result.get(t) is None else f"{result[t][measure]}" for t in tests]
-        for (binary_version, result) in results.items()
-    ]
-
-    latex_rows = [" & ".join(row) + "\\\\ \n" for row in rows]
-    latex_string = (
-        ("\\begin{table}\n")
-        + ("\\caption{placeholder caption}\n")
-        + ("\\label{tbl:placeholder-label}\n")
-        + ("\\centering\n")
-        + ("\\begin{tabular}{|" + "|".join(["l"] + ["r" for t in tests]) + "|}\n")
-        + ("\\hline\n")
-        + (" & " + " & ".join(tests) + " \\\\")
-        + ("\\hline\n")
-        + (("\\hline\n").join(latex_rows))
-        + ("\\hline\n")
-        + ("\\end{tabular}\n")
-        + ("\\end{table}\n")
-    ).replace("_", "\\_")
-
-    print(latex_string)
-
-
-def org_table(tests, measure, results):
-    rows = [
-        [binary_version]
-        + ["N/A" if result.get(t) is None else f"{result[t][measure]}" for t in tests]
-        for (binary_version, result) in results.items()
-    ]
-
-    org_rows = ["| " + " | ".join(row) + " |\n" for row in rows]
-
-    org_string = (
-        ("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-        + ("|   | " + " | ".join(tests) + " |\n")
-        + ("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-        + (("|---|---" + "".join(["|---" for t in tests]) + "|\n").join(org_rows))
-        + ("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-    )
-
-    print(org_string)
-
-
 @click.command()
 @click.option("--runs", type=int, help="Number of runs", default=10)
 @click.option("--binary-size", is_flag=True, help="Print binary size", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
 @click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag", multiple=True)
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-@click.option(
-    "--print-latex-table",
-    is_flag=True,
-    help="Print results as latex table",
-    default=False,
-)
-@click.option(
-    "--print-org-table",
-    is_flag=True,
-    help="Print results as org mode table",
-    default=False,
-)
-def measure(runs, binary_size, folder, wasm_opt, verbose, print_latex_table, print_org_table):
+def measure(runs, binary_size, folder, wasm_opt, verbose):
     assert runs > 0, "Expected at least one run."
 
     f_name = pathlib.PurePath(folder).name

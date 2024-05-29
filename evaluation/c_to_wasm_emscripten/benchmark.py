@@ -5,6 +5,7 @@ import click
 import subprocess
 import json
 import pathlib
+from tqdm import tqdm
 
 CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
@@ -38,6 +39,10 @@ def get_engine_version(engine):
         print(f"Engine {engine} not found.")
         exit(1)
 
+def program_opt_name(program, flags):
+    flags = map(lambda f: f.replace("-", ""), flags)
+    return f"{program}-opt_{'-'.join(flags)}"
+
 
 def single_run_node(folder, program, verbose):
     r = subprocess.run(
@@ -62,72 +67,40 @@ def single_run_node(folder, program, verbose):
     res = "{" + r.stdout.decode("ascii").split("{{")[1].split("}}")[0] + "}"
     return json.loads(res)
 
-
-def latex_table(tests, measure, results):
-    rows = [
-        [binary_version]
-        + ["N/A" if result.get(t) is None else f"{result[t][measure]}" for t in tests]
-        for (binary_version, result) in results.items()
-    ]
-
-    latex_rows = [" & ".join(row) + "\\\\ \n" for row in rows]
-    latex_string = (
-        ("\\begin{table}\n")
-        + ("\\caption{placeholder caption}\n")
-        + ("\\label{tbl:placeholder-label}\n")
-        + ("\\centering\n")
-        + ("\\begin{tabular}{|" + "|".join(["l"] + ["r" for t in tests]) + "|}\n")
-        + ("\\hline\n")
-        + (" & " + " & ".join(tests) + " \\\\")
-        + ("\\hline\n")
-        + (("\\hline\n").join(latex_rows))
-        + ("\\hline\n")
-        + ("\\end{tabular}\n")
-        + ("\\end{table}\n")
-    ).replace("_", "\\_")
-
-    print(latex_string)
-
-
-def org_table(tests, measure, results):
-    rows = [
-        [binary_version]
-        + ["N/A" if result.get(t) is None else f"{result[t][measure]}" for t in tests]
-        for (binary_version, result) in results.items()
-    ]
-
-    org_rows = ["| " + " | ".join(row) + " |\n" for row in rows]
-
-    org_string = (
-        ("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-        + ("|   | " + " | ".join(tests) + " |\n")
-        + ("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-        + (("|---|---" + "".join(["|---" for t in tests]) + "|\n").join(org_rows))
-        + ("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-    )
-
-    print(org_string)
+def create_optimized_programs(folder, flags):
+    print(f"Creating programs optimized with wasm-opt {' '.join(flags)} in {folder}.")
+    for program in tqdm(programs):
+        program_opt = program_opt_name(program, flags)
+        path_orig = os.path.join(folder, f"{program}.wasm")
+        path_opt = os.path.join(folder, f"{program_opt}.wasm")
+        if not os.path.exists(path_opt):
+            subprocess.run(
+                [
+                    "wasm-opt",
+                    *flags,
+                    "--enable-tail-call",
+                    "--enable-reference-types",
+                    "--enable-gc",
+                    "--enable-mutable-globals",
+                    "--enable-bulk-memory",
+                    "--enable-exception-handling",
+                    "--enable-multivalue",
+                    "--enable-strings",
+                    "--enable-nontrapping-float-to-int",
+                    path_orig,
+                    "--output",
+                    path_opt,
+                ]
+            )
 
 
 @click.command()
 @click.option("--runs", type=int, help="Number of runs", default=10)
 @click.option("--binary-size", is_flag=True, help="Print binary size", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
-@click.option("--opt", type=str, help="optimization level (O1 or O2)", default="")
+@click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag", multiple=True)
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-@click.option(
-    "--print-latex-table",
-    is_flag=True,
-    help="Print results as latex table",
-    default=False,
-)
-@click.option(
-    "--print-org-table",
-    is_flag=True,
-    help="Print results as org mode table",
-    default=False,
-)
-def measure(runs, binary_size, folder, opt, verbose, print_latex_table, print_org_table):
+def measure(runs, binary_size, folder, wasm_opt, verbose):
     assert runs > 0, "Expected at least one run."
 
     f_name = pathlib.PurePath(folder).name
@@ -135,11 +108,17 @@ def measure(runs, binary_size, folder, opt, verbose, print_latex_table, print_or
     print(f"Running {f_name}, avg. of {runs} runs in {engine_version}.")
 
     for program in programs:
-        program = program if opt == "" else program + "-opt_" + opt
         path = f"{folder}/{program}.wasm"
-        
+
         if not os.path.exists(path):
             continue
+
+        if wasm_opt:
+            program = program_opt_name(program, wasm_opt)
+            path = f"{folder}/{program}.wasm"
+            if not os.path.exists(path):
+                print(f"Didn't find optimized binary: {path}")
+                create_optimized_programs(folder, wasm_opt)
 
         values = []
         failed = False
