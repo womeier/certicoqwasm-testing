@@ -9,5 +9,11 @@ run-add: add.wasm
 #	@node --experimental-wasm-typed_funcref --experimental-wasm-return-call --experimental-wasm-gc add.js
 	@node add.js
 
+run-tc: tc.wasm
+	@echo "Running tc.{js, wasm} with node (needs node >= 22)..."
+#	@node --experimental-wasm-typed_funcref --experimental-wasm-return-call --experimental-wasm-gc add.js
+	@node tc.js
+
+
 clean:
 	rm -r *.wasm
