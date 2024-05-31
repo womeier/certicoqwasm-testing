@@ -223,15 +223,24 @@ def latex_table(tests, measure, results):
 
 
 
-def org_table(tests, measure, results):
-    rows = [[binary_version] + ["N/A" if result.get(t) is None else f"{result[t][measure]}" for t in tests] for (binary_version, result) in results.items()]
+def org_table(tests, measures, results):
+    allrows = []
+    for (version, result) in results.items():
+        rows=[]
+        for measure in measures:
+            row = [measure] + ["" if result.get(t) is None else f"{result[t][measure]}" for t in tests]
+            rows.append(row)
+        allrows.append((version, rows))
 
-    org_rows = ["| " + " | ".join(row) + " |\n" for row in rows]
 
-    org_string = (("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-                  +("|   | " + " | ".join(tests) + " |\n")
+    orgrows = []
+    for (version, rows) in allrows:
+        orgrows.append(f"| {version} | " + " | ".join(rows[0]) + " |\n" + "".join(["|   | " + " | ".join(row) + " |\n" for row in rows[1:]]))
+
+    org_string = (("|---|---|---" + "".join(["|---" for t in tests]) + "|\n")
+                  +("|   |   |   " + " | ".join(tests) + " |\n")
                   +("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-                  +(("|---|---" + "".join(["|---" for t in tests]) + "|\n").join(org_rows))
+                  +(("|---|---" + "".join(["|---" for t in tests]) + "|\n").join(orgrows))
                   +("|---|---" + "".join(["|---" for t in tests]) + "|\n"))
 
     print(org_string)
@@ -333,6 +342,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                 "time_startup": time_startup,
                 "time_main": time_main,
                 "time_pp": time_pp,
+                "sum": time_startup + time_main,
                 "bytes_used": memory_in_kb,
                 "binary_size_in_kb": binary_size_in_kb,
             }
@@ -372,19 +382,9 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
     if print_org_table:
         print("\nPrinting org tables:\n")
 
-        for meas in measurements:
-            if not memory_usage and meas == "bytes_used":
-                continue
-
-            print(f"\nPrinting org table for {meas}:")
-            org_table(programs, meas, all_results)
-
-        if binary_size:
-            print("\nPrinting org table for binary size:")
-            org_table(programs, "binary_size_in_kb", all_results)
+        org_table(programs, ["time_main", "time_pp", "sum"], all_results)
 
     print("")
-
 
 if __name__ == "__main__":
     measure()
