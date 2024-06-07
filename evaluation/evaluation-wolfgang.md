@@ -34,7 +34,7 @@ TODO measure with new Node.js version
 | Wasm | (Node.js)      |  20826 kb | 142740 kb |  74779 kb | 504 kb | Boxed 0-ary constructors (in CoqPL'24) | benchmarks_cps-feb-01-24
 | Wasm | (Node.js)      |   6128 kb |  38141 kb |  25642 kb | 248 kb | Unboxed 0-ary constructors             | benchmarks_cps-0aryfast-feb-13-24
 
-On average, unboxed 0-ary constructors yield a ~65% decrease in memory consumption across the benchmarks.
+On average, unboxed 0-ary constructors yield a ~65% decrease in memory consumption across the benchmarks. This table is false, the lower is probably non-cps?
 
 #### Binaryen optimizations (binaryen version 108)
 |      |                |  vs_easy | vs_hard |  sha_fast | binom | comment            | reproduce
