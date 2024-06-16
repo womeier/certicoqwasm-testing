@@ -49,6 +49,7 @@ def get_info(path):
         "non-cps-br_if-apr-12-24": "non-cps (same as mrch-24-24), br_if instead of if return",
         "non-cps-wasmgc-may-16-24": "WasmGC demo (unverified), based on apr-12-24",
         "non-cps-primops-may-21-24": "new constr. repr. + primops, based on apr-12-24",
+        "non-cps-no-imports-june-15-24": "removed imports, otherwise may-21-24", # this will be removed in the future
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
@@ -106,7 +107,7 @@ def create_optimized_programs(folder, flags):
 def wasmtime_compile_programs(folder, wasmopt_flag):
     print(f"Compiling wasm modules AOT with wasmtime in {folder}.")
     for program in tqdm(programs):
-        if wasmopt_flag is not None:
+        if wasmopt_flag != ():
             program = program_opt_name(program, wasmopt_flag)
 
         path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
