@@ -63,7 +63,12 @@ module = Module.from_file(
 )
 
 # instantiate module
-instance = Instance(store, module, [print_char_stdout, print_int_stdout])
+if len(module.imports) == 0:
+    # new version
+    instance = Instance(store, module, [])
+elif len(module.imports) == 2:
+    # old debugging version with the 2 imported functions
+    instance = Instance(store, module, [print_char_stdout, print_int_stdout])
 
 stop_startup = time.time()
 time_startup = round((stop_startup - start_startup) * 1000)
