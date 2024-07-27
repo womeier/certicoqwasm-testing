@@ -1,4 +1,4 @@
-# Testing certicoqwasm
+# Testing CertiCoq-Wasm
 
 This repo contains scripts and examples for testing [CertiCoq-Wasm](https://github.com/womeier/certicoqwasm).
 
@@ -12,7 +12,7 @@ This repo contains scripts and examples for testing [CertiCoq-Wasm](https://gith
 - wasmtime and wasmtime-py, version 18 or later
   
 ### For development
-- CertiCoq with wasm backend: [certicoqwasm](https://github.com/womeier/certicoqwasm)
+- CertiCoq with wasm backend: [CertiCoq-Wasm](https://github.com/womeier/certicoqwasm)
 
 
 ## Evaluation
