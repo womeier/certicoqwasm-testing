@@ -62,12 +62,6 @@ To evaluate the extraction via C and emscripten (more [information](./evaluation
 ```
 
 # Demos
-
-## Quick SHA256 demo (for development)
-This extracts an implementation of the SHA256 sum to Wasm and runs it with Node.js.
-
-Run `make sha`, or `make sha_explicit`.
-
 ## SHA256 website demo
 In `demo_website_sha256/`, start dev-browser by:
 ```
@@ -82,5 +76,5 @@ make run-concordium-test
 See [here](./demo_blockchain_smartcontract/) for more information.
 
 # Other
-## Test import script for WasmCert
-The script `wasm_to_coq.py` takes a given .wasm file and outputs a Coq file, importing the binary to WasmCert-Coq.
+- The script `wasm_to_coq.py` takes a given .wasm file and outputs a Coq file, importing the binary to WasmCert-Coq.
+- Compile an example program with CertiCoq-Wasm and run the generated Wasm binary: `make sha` or `make sha_explicit`.
