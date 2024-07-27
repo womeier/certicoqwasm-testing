@@ -76,10 +76,17 @@ This compiles extracts a sha256 sum (taken from A.W. Appel) to wasm and runs it 
 Run `make sha`, or `make sha_explicit`.
 
 ### sha256 website demo
-In `website_demo_sha256`, start dev-browser by:
+In `demo_website_sha256/`, start dev-browser by:
 ```
 make develop
 ```
+
+### Blockchain demo
+In `demo_blockchain_smartcontract/`, execute smart contract by:
+```
+make run-concordium-test
+```
+See `./demo_blockchain_smartcontract/README.md` for more information.
 
 ## Test import script for WasmCert
 The script `wasm_to_coq.py` takes a given .wasm file and outputs a Coq file, importing the binary to WasmCert-Coq.

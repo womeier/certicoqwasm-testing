@@ -1,0 +1,12 @@
+[package]
+name = "wasm-testing"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+concordium-smart-contract-testing = "4.0"
+
+#[dev-dependencies]
+#concordium-smart-contract-testing = "4.0"
