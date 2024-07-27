@@ -69,11 +69,10 @@ make develop
 ```
 
 ## Blockchain demo
-In `demo_blockchain_smartcontract/`, run some tests for the smart contract `counter` by:
+In `demo_blockchain_smartcontract/`, run some tests (more [information](./demo_blockchain_smartcontract/)) for the smart contract `counter` by:
 ```
 make run-concordium-test
 ```
-See [here](./demo_blockchain_smartcontract/) for more information.
 
 # Other
 - The script `wasm_to_coq.py` takes a given .wasm file and outputs a Coq file, importing the binary to WasmCert-Coq.
