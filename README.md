@@ -1,39 +1,38 @@
 # Testing certicoqwasm
 
-This repo contains scripts and examples for testing [certicoqwasm](https://github.com/womeier/certicoqwasm).
+This repo contains scripts and examples for testing [CertiCoq-Wasm](https://github.com/womeier/certicoqwasm).
 
 ## Requirements & Setup
-Note, that CertiCoq-Wasm is not necessary to run the benchmarks.
-- CertiCoq with wasm backend: [certicoqwasm](https://github.com/womeier/certicoqwasm).
+### For running the benchmarks
+- Python
 - Node.js (version 22 or higher)
-- python 3
 - binaryen (version 117 or higher)
-- Rust (e.g. 1.77)
-- wasm-tools: [installation](https://github.com/bytecodealliance/wasm-tools)
-
-
-## Performance evaluation CertiCoq-Wasm binaries
-See [here](./evaluation/evaluation-wolfgang.md) (outdated) and [here](./evaluation/evaluation_27_03_24.org) for some performance comparisons.
+- Rust (e.g. 1.77) and wasm-tools (cargo install wasm-tools)
+- wabt
+### For development
+- CertiCoq with wasm backend: [certicoqwasm](https://github.com/womeier/certicoqwasm)
 
 ### Run CertiCoq-Wasm binaries with Node.js
-In `evaluation`, run:
+In `evaluation/`, run:
 ```
 ./benchmark.py --engine=node --folder ./binaries/non-cps-primops-may-21-24 --wasm-opt --coalesce-locals
 ```
 
+## Evaluation
+
 ### Run CertiCoq-Wasm binaries with wasmtime
-In `evaluation`, run:
+In `evaluation/`, run:
 ```
 ./benchmark.py --engine=wasmtime --folder ./binaries/non-cps-primops-may-21-24 --wasm-opt --coalesce-locals
 ```
 
 ### Run CertiCoq-Wasm binaries with wasmtime-compile
-In `evaluation`, run:
+In `evaluation/`, run:
 ```
 ./benchmark.py --engine=wasmtime-compile --folder ./binaries/non-cps-primops-may-21-24 --wasm-opt --coalesce-locals
 ```
 
-Note, that wasmtime-compile is currently not supported. (Could be supported by removing the unused imports.)
+Note, that wasmtime-compile is only supported for the recent versions of CertiCoq-Wasm.
 
 ### Running the benchmarks
 Wasmtime requires the installation of wasmtime-py, version 18 or later.
@@ -49,27 +48,27 @@ Wasmtime requires the installation of wasmtime-py, version 18 or later.
 
 
 ## Performance evaluation Rust -> Wasm binaries
-In `evaluation/rust_to_wasm`, run:
+In `evaluation/rust_to_wasm/`, run:
 ```
 ./benchmark.py --folder ./binaries/unchecked_arith/
 ```
 See [here](./evaluation/rust_to_wasm/setup.md) for more information.
 
 ## Performance evaluation OCaml -> Wasm binaries
-In `evaluation/wasm_of_ocaml`, run:
+In `evaluation/wasm_of_ocaml/`, run:
 ```
 ./benchmark.py --folder ./binaries/
 ```
 See [here](./evaluation/wasm_of_ocaml/setup.md) for more information.
 
 ## Performance evaluation C -> Wasm binaries
-In `evaluation/c_to_wasm_emscripten`, run:
+In `evaluation/c_to_wasm_emscripten/`, run:
 ```
 ./benchmark.py --folder ./binaries/
 ```
 See [here](./evaluation/c_to_wasm_emscripten/setup.md) for more information.
 
-## Demos
+# Demos
 
 ### Quick sha256 demo (unrelated to sha demo website)
 This compiles extracts a sha256 sum (taken from A.W. Appel) to wasm and runs it with Node.js.
@@ -82,11 +81,11 @@ make develop
 ```
 
 ### Blockchain demo
-In `demo_blockchain_smartcontract/`, execute smart contract by:
+In `demo_blockchain_smartcontract/`, run some tests for the smart contract `counter` by:
 ```
 make run-concordium-test
 ```
-See `./demo_blockchain_smartcontract/README.md` for more information.
+See [here](./demo_blockchain_smartcontract/) for more information.
 
 ## Test import script for WasmCert
 The script `wasm_to_coq.py` takes a given .wasm file and outputs a Coq file, importing the binary to WasmCert-Coq.
