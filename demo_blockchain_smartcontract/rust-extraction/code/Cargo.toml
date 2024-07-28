@@ -1,0 +1,32 @@
+[package]
+name = "counter"
+version = "0.1.0"
+authors = ["Cobra"]
+edition = "2018"
+
+[features]
+default = ["std"]
+
+std = ["concordium-std/std"]
+
+[dependencies]
+concert-std = { path = "../concert-std" }
+bumpalo = "3.5.0"
+immutable-map = "0.1.2"
+concordium-std = { path = "/home/wolfgang/ProjectsUni/Compilerstep/smart_contracts/concordium-rust-smart-contracts/concordium-std", default-features=false }
+concordium-std-derive = { path = "/home/wolfgang/ProjectsUni/Compilerstep/smart_contracts/concordium-rust-smart-contracts/concordium-std-derive", default-features=false }
+
+# [dependencies.concordium-std]
+# version = "=2.0.0"
+# default-features = false
+
+# [dev-dependencies.concordium-std]
+# version = "2.0.0"
+# features = ["std"] # std is needed because testing depends on std.
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = 3

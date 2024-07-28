@@ -22,7 +22,7 @@ fn main() {
         )
         .unwrap();
 
-    println!("--Initializing counter with 0.");
+    println!("--Initializing counter with 13.");
     // Initialize a smart contract from the deployed module.
     let initialization = chain
         .contract_init(
@@ -32,13 +32,13 @@ fn main() {
             InitContractPayload {
                 mod_ref: deployment.module_reference, // Module to initialize from.
                 init_name: OwnedContractName::new_unchecked("init_counter".into()), // Contract to init.
-                param: OwnedParameter::from_serial(&0u32).unwrap(), // Any type implementing [`Serial`] can be used.
+                param: OwnedParameter::from_serial(&13u32).unwrap(), // Any type implementing [`Serial`] can be used.
                 amount: Amount::zero(),                             // CCD to send the contract.
             },
         )
         .unwrap();
 
-    println!("--Increasing counter by 4.");
+    println!("--Increasing counter by 5.");
     // Update the initialized contract.
     let update = chain
         .contract_update(
@@ -49,15 +49,15 @@ fn main() {
             UpdateContractPayload {
                 address: initialization.contract_address, // The contract to update.
                 receive_name: OwnedReceiveName::new_unchecked("counter.inc".into()), // The receive function to call.
-                message: OwnedParameter::from_serial(&4u64).unwrap(), // The parameter sent to the contract.
+                message: OwnedParameter::from_serial(&5u64).unwrap(), // The parameter sent to the contract.
                 amount: Amount::from_ccd(100), // Sending the contract 100 CCD.
             },
         )
         .unwrap();
 
     // Check the return value.
-    assert_eq!(update.return_value, to_bytes(&4u64));
-    println!("Counter has value 4.");
+    assert_eq!(update.return_value, to_bytes(&18u64));
+    println!("Counter has value 18.");
 
     println!("--Increasing counter by 1.");
     // Update the initialized contract.
@@ -77,8 +77,8 @@ fn main() {
         .unwrap();
 
     // Check the return value.
-    assert_eq!(update.return_value, to_bytes(&5u64));
-    println!("Counter has value 5.");
+    assert_eq!(update.return_value, to_bytes(&19u64));
+    println!("Counter has value 19.");
 
     println!("--Increasing counter by 42.");
     // Update the initialized contract.
@@ -97,6 +97,6 @@ fn main() {
         )
         .unwrap();
 
-    assert_eq!(update.return_value, to_bytes(&47u64));
-    println!("Counter has value 47.");
+    assert_eq!(update.return_value, to_bytes(&61u64));
+    println!("Counter has value 61.");
 }
