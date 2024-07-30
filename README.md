@@ -49,13 +49,18 @@ To evaluate the extraction via Rust (more [information](./evaluation/rust_to_was
 ```
 <br>
 
-To evaluate the extraction via OCaml (more [information](./evaluation/wasm_of_ocaml/setup.md)), run the following in `evaluation/wasm_of_ocaml/`:
+To evaluate the extraction via OCaml (more [information](./evaluation/ocaml_to_wasm/setup.md)), run the following in `evaluation/ocaml_to_wasm/`:
 ```
 ./benchmark.py --folder ./binaries/
 ```
 <br>
 
-To evaluate the extraction via C and emscripten (more [information](./evaluation/c_to_wasm_emscripten/setup.md)), run the following in `evaluation/c_to_wasm_emscripten`:
+To evaluate the extraction via C and emscripten (more [information](./evaluation/c_to_wasm/setup.md)), run the following in `evaluation/c_to_wasm`:
+```
+./benchmark.py --folder ./binaries/
+```
+
+To evaluate the extraction via Malfunction (more [information](./evaluation/malfunction_to_wasm/setup.md)), run the following in `evaluation/malfunction_to_wasm`:
 ```
 ./benchmark.py --folder ./binaries/
 ```
