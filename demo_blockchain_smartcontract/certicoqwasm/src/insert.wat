@@ -87,6 +87,13 @@
     (i32.const 8)) ;; Eight bytes should have been written.
 )
 
+;; return the current value of the counter in the return value.
+(func $view_counter (export "counter.view") (param i64) (result i32)
+  (call $set_return_value (call $get_state))
+  ;; and return success
+  (i32.const 0)
+)
+
 ;; =================================================================================================================================
 ;; Helper Functions CertiCoq-Wasm
 

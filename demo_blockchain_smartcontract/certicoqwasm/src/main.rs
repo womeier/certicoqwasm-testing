@@ -55,6 +55,23 @@ fn main() {
         )
         .unwrap();
 
+    let info = chain
+        .contract_update(
+            Signer::with_one_key(), // Used for specifying the number of signatures.
+            ACC,                    // Invoker account.
+            Address::Account(ACC),  // Sender (can also be a contract).
+            Energy::from(10000),    // Maximum energy allowed for the update.
+            UpdateContractPayload {
+                address: initialization.contract_address, // The contract to update.
+                receive_name: OwnedReceiveName::new_unchecked("counter.view".into()), // The receive function to call.
+                message: OwnedParameter::from_serial(&0u64).unwrap(), // not used
+                amount: Amount::from_ccd(100), // Sending the contract 100 CCD.
+            },
+        )
+        .unwrap();
+    // test view function
+    assert_eq!(info.return_value, to_bytes(&18u64));
+
     // Check the return value.
     assert_eq!(update.return_value, to_bytes(&18u64));
     println!("Counter has value 18.");
