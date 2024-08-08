@@ -1,14 +1,18 @@
 # Setup for deploying on Concordium testnet
-public key: 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU
-key file: 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU.export
-import key to CLI locally, see Concordium documentation
-account: [link to ccdscan](https://testnet.ccdscan.io/?dcount=2&dentity=account&daddress=3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU)
-input parameter for invoking smart contracts: file of 8 bytes containing an i64 in little endian, e.g. files zero, five, one
-counter.wasm: generated with certicoqwasm-testing version [cff7a260](https://github.com/womeier/certicoqwasm-testing/commit/cff7a260e63eb1e51eaba0fe8795207dd47d17d7)
+- public key: 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU
+- key file: 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU.export
+- import key to CLI locally, see Concordium documentation
+- account: [link to ccdscan](https://testnet.ccdscan.io/?dcount=2&dentity=account&daddress=3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU)
+- input parameter for invoking smart contracts: file of 8 bytes containing an i64 in little endian, e.g. files zero, five, one
+- counter.wasm: generated with `gh/womeier/certicoqwasm-testing` version [cff7a260](https://github.com/womeier/certicoqwasm-testing/commit/cff7a260e63eb1e51eaba0fe8795207dd47d17d7)
 
 # Deploy
 ```
 $ concordium-client module deploy counter.wasm --contract-version 1 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --name counter --grpc-ip 37.27.96.169 --grpc-port 20001
+```
+<details><summary>OUTPUT</summary>
+<p>
+         
 ```
 Warning: The module does not have embedded build information.
          It will likely not be possible to match this module to source code.
@@ -32,12 +36,20 @@ Transaction is finalized into block 4dc53f9629bf8d4a3b72146ab321172ca2246bd54249
 [21:07:33] Transaction finalized.
 Module successfully deployed with reference: '8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d5243'.
 Module reference 8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d5243 was successfully named 'counter'.
+```
+
+</p>
+</details>
 
 Success, module deployed: [link to ccdscan](https://testnet.ccdscan.io/?dcount=1&dentity=module&dmoduleReference=8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d5243)
 
 # Init contract (with 5)
 ```
 $ concordium-client contract init 8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d5243 --contract counter --energy 10000 --parameter-binary five --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
+```
+<details><summary>OUTPUT</summary>
+<p>
+         
 ```
 Initialize contract 'counter' from module '8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d5243' with binary parameters from 'five'. Sending 0.000000 CCD.
 Allowing up to 10000 NRG to be spent as transaction fee.
@@ -55,6 +67,10 @@ The transaction will still get processed and may be queried using
 Transaction is finalized into block 58235870d113fe6f161bc0d2882287b662ae9dc38bef4dad917fa1dabb59a5e3 with status "success" and cost 0.110625 CCD (1638 NRG).
 [21:18:47] Transaction finalized.
 Contract successfully initialized with address: {"index":9851,"subindex":0}
+```
+
+</p>
+</details>
 
 succesfully initialized, can search on testnet.ccdscan.io for 9851,
 returning created instance: [link to ccdscan](https://testnet.ccdscan.io/?dcount=1&dentity=contract&dcontractAddressIndex=9851&dcontractAddressSubIndex=0)
@@ -63,15 +79,21 @@ returning created instance: [link to ccdscan](https://testnet.ccdscan.io/?dcount
 ```
 $ concordium-client contract invoke 9851 --entrypoint view --energy 10000 --grpc-ip 37.27.96.169 --grpc-port 20001
 ```
+```
 Invocation resulted in success:
  - Energy used: 1039 NRG
  - Return value (raw):
   [5,0,0,0,0,0,0,0]
  .
+```
 
 # Increment counter fail (try to increment by 0)
 ```
 $ concordium-client contract update 9851 --entrypoint inc --parameter-binary zero --energy 10000 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
+```
+<details><summary>OUTPUT</summary>
+<p>
+         
 ```
 Update contract 'counter' using the function 'inc' with binary parameters from 'zero'. Sending 0.000000 CCD.
 Allowing up to 10000 NRG to be spent as transaction fee.
@@ -90,12 +112,20 @@ Transaction is finalized into block 966c65ba3cf3d6dfb9e871047296ad7178daf713b3ce
 Transaction rejected: runtime failure.
 [21:35:13] Transaction finalized.
 Error: Updating contract instance failed: Runtime failure.
+```
+
+</p>
+</details>
 
 this is expected, the increment can not be 0, see Counter.v in ConCert
 
 # Increment counter success (increment by 1)
 ```
 $ concordium-client contract update 9851 --entrypoint inc --parameter-binary one --energy 10000 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
+```
+<details><summary>OUTPUT</summary>
+<p>
+         
 ```
 Update contract 'counter' using the function 'inc' with binary parameters from 'one'. Sending 0.000000 CCD.
 Allowing up to 10000 NRG to be spent as transaction fee.
@@ -113,19 +143,29 @@ The transaction will still get processed and may be queried using
 Transaction is finalized into block 686adc8dbabb5b8d26f9df29fab889152ffa22fe8fb3c8e9090bb8b5e1f29c35 with status "success" and cost 0.101952 CCD (1510 NRG).
 [21:36:49] Transaction finalized.
 Successfully updated contract instance {"index":9851,"subindex":0} using the function 'inc'.
+```
+
+</p>
+</details>
 
 ```
 $ concordium-client contract invoke 9851 --entrypoint view --energy 10000 --grpc-ip 37.27.96.169 --grpc-port 20001
+```
 ```
 Invocation resulted in success:
  - Energy used: 1039 NRG
  - Return value (raw):
   [6,0,0,0,0,0,0,0]
  .
+```
 
 # Increment counter success (increment by 5)
 ```
 $ concordium-client contract update 9851 --entrypoint inc --parameter-binary five --energy 10000 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
+```
+<details><summary>OUTPUT</summary>
+<p>
+         
 ```
 Update contract 'counter' using the function 'inc' with binary parameters from 'five'. Sending 0.000000 CCD.
 Allowing up to 10000 NRG to be spent as transaction fee.
@@ -143,15 +183,21 @@ The transaction will still get processed and may be queried using
 Transaction is finalized into block 78c3c0c60b075128f6cd6c16446c51caa55a5b215f08a0a4a6ffe840c85d278a with status "success" and cost 0.102087 CCD (1512 NRG).
 [21:38:53] Transaction finalized.
 Successfully updated contract instance {"index":9851,"subindex":0} using the function 'inc'.
+```
+
+</p>
+</details>
 
 ```
 $ concordium-client contract invoke 9851 --entrypoint view --energy 10000 --grpc-ip 37.27.96.169 --grpc-port 20001
+```
 ```
 Invocation resulted in success:
  - Energy used: 1039 NRG
  - Return value (raw):
   [11,0,0,0,0,0,0,0]
  .
+```
 
 # View transaction history
 [link to ccdscan](https://testnet.ccdscan.io/?dcount=1&dentity=contract&dcontractAddressIndex=9851&dcontractAddressSubIndex=0)
