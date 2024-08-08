@@ -1,4 +1,5 @@
-# Setup for deploying on Concordium testnet
+# Deploying the counter contract on Concordium testnet
+## Setup 
 - public key: 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU
 - key file: 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU.export
 - import key to CLI locally, see Concordium documentation
@@ -6,7 +7,7 @@
 - input parameter for invoking smart contracts: file of 8 bytes containing an i64 in little endian, e.g. files zero, five, one
 - counter.wasm: generated with `gh/womeier/certicoqwasm-testing` version [cff7a260](https://github.com/womeier/certicoqwasm-testing/commit/cff7a260e63eb1e51eaba0fe8795207dd47d17d7)
 
-# Deploy
+## Deploy
 ```
 $ concordium-client module deploy counter.wasm --contract-version 1 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --name counter --grpc-ip 37.27.96.169 --grpc-port 20001
 ```
@@ -43,7 +44,7 @@ Module reference 8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d524
 
 Success, module deployed: [link to ccdscan](https://testnet.ccdscan.io/?dcount=1&dentity=module&dmoduleReference=8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d5243)
 
-# Init contract (with 5)
+## Init contract (with 5)
 ```
 $ concordium-client contract init 8e2e2ab788837a44642e5221e43e5be8b435854bdf73f05f996f4792f45d5243 --contract counter --energy 10000 --parameter-binary five --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
 ```
@@ -75,7 +76,7 @@ Contract successfully initialized with address: {"index":9851,"subindex":0}
 succesfully initialized, can search on testnet.ccdscan.io for 9851,
 returning created instance: [link to ccdscan](https://testnet.ccdscan.io/?dcount=1&dentity=contract&dcontractAddressIndex=9851&dcontractAddressSubIndex=0)
 
-# View counter value
+## View counter value
 ```
 $ concordium-client contract invoke 9851 --entrypoint view --energy 10000 --grpc-ip 37.27.96.169 --grpc-port 20001
 ```
@@ -87,7 +88,7 @@ Invocation resulted in success:
  .
 ```
 
-# Increment counter fail (try to increment by 0)
+## Increment counter fail (try to increment by 0)
 ```
 $ concordium-client contract update 9851 --entrypoint inc --parameter-binary zero --energy 10000 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
 ```
@@ -119,7 +120,7 @@ Error: Updating contract instance failed: Runtime failure.
 
 this is expected, the increment can not be 0, see Counter.v in ConCert
 
-# Increment counter success (increment by 1)
+## Increment counter success (increment by 1)
 ```
 $ concordium-client contract update 9851 --entrypoint inc --parameter-binary one --energy 10000 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
 ```
@@ -159,7 +160,7 @@ Invocation resulted in success:
  .
 ```
 
-# Increment counter success (increment by 5)
+## Increment counter success (increment by 5)
 ```
 $ concordium-client contract update 9851 --entrypoint inc --parameter-binary five --energy 10000 --sender 3KyTKQMeMF8G17R1kHRKy7Jh1R2osJutKtB3n8ucR9hYi9yLwU --grpc-ip 37.27.96.169 --grpc-port 20001
 ```
@@ -199,5 +200,5 @@ Invocation resulted in success:
  .
 ```
 
-# View transaction history
+## View transaction history
 [link to ccdscan](https://testnet.ccdscan.io/?dcount=1&dentity=contract&dcontractAddressIndex=9851&dcontractAddressSubIndex=0)
