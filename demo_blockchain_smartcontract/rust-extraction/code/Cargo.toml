@@ -10,7 +10,7 @@ default = ["std"]
 std = ["concordium-std/std"]
 
 [dependencies]
-concert-std = { path = "../concert-std" }
+concert-std = { path = "/home/wolfgang/ProjectsUni/Compilerstep/smart_contracts/ConCert/extraction/tests/extracted-code/concordium-extract/concert-std" }
 bumpalo = "3.5.0"
 immutable-map = "0.1.2"
 concordium-std = { path = "/home/wolfgang/ProjectsUni/Compilerstep/smart_contracts/concordium-rust-smart-contracts/concordium-std", default-features=false }
