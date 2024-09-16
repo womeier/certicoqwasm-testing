@@ -4,12 +4,12 @@ This repo contains scripts and examples for testing [CertiCoq-Wasm](https://gith
 
 ## Requirements & Setup
 ### For running the benchmarks
-- Python
+- Python 3
 - Node.js (version 22 or higher)
 - binaryen (version 117 or higher)
 - Rust (e.g. 1.77) and wasm-tools (cargo install wasm-tools)
 - wabt
-- wasmtime and wasmtime-py, version 18 or later
+- wasmtime and wasmtime-py, most recent version (at least 18)
 
 ### For development
 - CertiCoq with wasm backend: [CertiCoq-Wasm](https://github.com/womeier/certicoqwasm)
