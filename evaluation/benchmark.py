@@ -30,6 +30,7 @@ programs = [
     "sm_gauss_nat",
     "sm_gauss_N",
 #    "sm_gauss_PrimInt", # comment in for non-cps-primops-may-21-24
+#    "coqprime", # comment in for wasmgc, and others supporting primops
 ]
 
 
