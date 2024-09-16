@@ -19,17 +19,17 @@ This repo contains scripts and examples for testing [CertiCoq-Wasm](https://gith
 ### How to run CertiCoq-Wasm binaries
 To evaluate CertiCoq-Wasm binaries with Node.js, run the following in `evaluation/`:
 ```
-./benchmark.py --engine=node --folder ./binaries/non-cps-no-imports-june-15-24 --wasm-opt --coalesce-locals
+./benchmark.py --engine=node --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt --coalesce-locals
 ```
 
 To evaluate CertiCoq-Wasm binaries with wasmtime, run the following in `evaluation/`:
 ```
-./benchmark.py --engine=wasmtime --folder ./binaries/non-cps-no-imports-june-15-24 --wasm-opt --coalesce-locals
+./benchmark.py --engine=wasmtime --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt --coalesce-locals
 ```
 
 To evaluate CertiCoq-Wasm binaries with wasmtime-compile, run the following in `evaluation/`:
 ```
-./benchmark.py --engine=wasmtime-compile --folder ./binaries/non-cps-no-imports-june-15-24 --wasm-opt --coalesce-locals
+./benchmark.py --engine=wasmtime-compile --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt --coalesce-locals
 ```
 
 Note, that wasmtime-compile is only supported for the recent versions of CertiCoq-Wasm.
