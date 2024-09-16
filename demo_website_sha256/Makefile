@@ -35,4 +35,6 @@ clean:
 		hyphen-data \
 		MEIPreload \
 		Last\ Version \
-		Safe\ Browsing
+		Safe\ Browsing \
+		BrowserMetrics-spare.pma \
+		component_crx_cache
