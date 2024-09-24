@@ -36,6 +36,7 @@ pp_function_map = {
     "sm_gauss_nat": pp.print_option(pp.print_nat_sexp),
     "sm_gauss_N": pp.print_option(pp.print_N_sexp),
     "sm_gauss_PrimInt": pp.print_option(pp.print_i63),
+    "coqprime": pp.print_bool,
 }
 
 if program_orig not in pp_function_map:
