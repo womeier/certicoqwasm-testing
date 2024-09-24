@@ -359,8 +359,8 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
 
             print(
                 f"{program_pp} : "
-                f"startup: {time_startup:>4}, main: {time_main:>3}, pp: {time_pp:>2}"
-                f", sum: {time_startup+time_main+time_pp:>4}"
+                f"startup: {time_startup:>4}, main: {time_main:>3}, sum (without pp): {time_startup+time_main:>4}, pp: {time_pp:>2}"
+                f", sum (all): {time_startup+time_main+time_pp:>4}"
                 + (f", memory used: {memory_in_kb} KB" if memory_usage else "")
                 + (f", bin size: {binary_size_in_kb:>4} KB" if binary_size else "")
             )
