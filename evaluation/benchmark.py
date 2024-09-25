@@ -187,27 +187,6 @@ def single_run_wasmtime(folder, program, precompile, verbose):
     return json.loads(res)
 
 
-def latex_table(tests, measure, results):
-    rows = [[binary_version] + ["N/A" if result.get(t) is None else f"{result[t][measure]}" for t in tests] for (binary_version, result) in results.items()]
-
-    latex_rows = [" & ".join(row) + "\\\\ \n" for row in rows]
-    latex_string = (("\\begin{table}\n")
-                    +("\\caption{placeholder caption}\n")
-                    +("\\label{tbl:placeholder-label}\n")
-                    +("\\centering\n")
-                    +("\\begin{tabular}{|" + "|".join(["l"] + ["r" for t in tests]) + "|}\n")
-                    +("\\hline\n")
-                    +(" & " + " & ".join(tests) + " \\\\")
-                    +("\\hline\n")
-                    +(("\\hline\n").join(latex_rows))
-                    +("\\hline\n")
-                    +("\\end{tabular}\n")
-                    +("\\end{table}\n")).replace("_", "\\_")
-
-    print(latex_string)
-
-
-
 def org_table(tests, measures, results):
     allrows = []
     for (version, result) in results.items():
@@ -239,9 +218,8 @@ def org_table(tests, measures, results):
 @click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag", multiple=True)
 @click.option("--wasmgc-cast-nochecks", is_flag=True, help="Disables runtime checks for casts.")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-@click.option("--print-latex-table", is_flag=True, help="Print results as latex table", default=False)
 @click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)
-def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_cast_nochecks, verbose, print_latex_table, print_org_table):
+def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_cast_nochecks, verbose, print_org_table):
     if engine not in ["wasmtime", "wasmtime-compile", "node"]:
         print("Expected wasmtime or node runtime.")
         exit(1)
@@ -348,21 +326,6 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
             )
 
         all_results[f_name] = folder_results
-
-    if print_latex_table:
-        print("\nPrinting LaTeX tables:\n")
-
-        for meas in measurements:
-
-            if not memory_usage and meas == "bytes_used":
-                continue
-
-            print(f"\nPrinting LaTeX table for {meas}:")
-            latex_table(programs, meas, all_results)
-
-        if binary_size:
-            print("\nPrinting LaTeX table for binary size:")
-            latex_table(programs, "binary_size_in_kb", all_results)
 
     if print_org_table:
         print("\nPrinting org tables:\n")

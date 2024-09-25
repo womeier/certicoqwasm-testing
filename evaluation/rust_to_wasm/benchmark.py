@@ -111,19 +111,7 @@ def org_table(tests, measure, results):
 @click.option("--binary-size", is_flag=True, help="Print binary size", default=False)
 @click.option("--folder", type=str, help="Folder to Wasm binaries", required=True)
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-@click.option(
-    "--print-latex-table",
-    is_flag=True,
-    help="Print results as latex table",
-    default=False,
-)
-@click.option(
-    "--print-org-table",
-    is_flag=True,
-    help="Print results as org mode table",
-    default=False,
-)
-def measure(runs, binary_size, folder, verbose, print_latex_table, print_org_table):
+def measure(runs, binary_size, folder, verbose):
     assert runs > 0, "Expected at least one run."
 
     f_name = pathlib.PurePath(folder).name
