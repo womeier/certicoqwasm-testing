@@ -161,18 +161,20 @@ def single_run_node(folder, program, wasmgc_cast_nochecks, verbose):
     return json.loads(res)
 
 
-def single_run_wasmtime(folder, program, verbose):
+def single_run_wasmtime(folder, program, precompile, verbose):
+    precompile_flag = [] if precompile else ["--no-precompile"]
     r = subprocess.run(
         [
             "python3",
             "run-wasmtime.py",
             folder,
             program,
+            *precompile_flag,
         ],
         capture_output=True,
     )
 
-    wasm_path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+    wasm_path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.{'c' if precompile else ''}wasm")
     if r.returncode != 0:
         print(f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}")
         exit(1)
@@ -183,26 +185,6 @@ def single_run_wasmtime(folder, program, verbose):
 
     res = "{" + r.stdout.decode("ascii").split("{{")[1].split("}}")[0] + "}"
     return json.loads(res)
-
-
-def single_run_wasmtime_compiled(folder, program):
-    wasm_path = os.path.join(folder, f"CertiCoq.Benchmarks.tests.{program}.cwasm")
-
-    start_main = time.time()
-    subprocess.run(
-        ["wasmtime",
-         "run",
-         "--allow-precompiled",
-         "-W",
-         "tail-call=y",
-         "--invoke",
-         "main_function",
-         wasm_path,
-         ]
-    )
-    stop_main = time.time()
-    time_main = round((stop_main - start_main) * 1000)
-    return { "time_main": time_main, "time_startup": 0, "time_pp":0, "bytes_used": None }
 
 
 def latex_table(tests, measure, results):
@@ -311,10 +293,10 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                     res = single_run_node(f, program, wasmgc_cast_nochecks, verbose)
 
                 elif engine == "wasmtime":
-                    res = single_run_wasmtime(f, program, verbose)
+                    res = single_run_wasmtime(f, program, precompile=False, verbose=verbose)
 
                 elif engine == "wasmtime-compile":
-                    res = single_run_wasmtime_compiled(f, program)
+                    res = single_run_wasmtime(f, program, precompile=True, verbose=verbose)
 
                 assert res is not None, "No value returned."
                 values.append(res)

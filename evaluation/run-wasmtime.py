@@ -7,24 +7,30 @@ import time
 import os
 
 assert (
-    len(sys.argv) == 3
-), "Expected two args: 0: folder containing Wasm binaries, 1: program"
+    len(sys.argv) == 3 or len(sys.argv) == 4
+), "Expected args: 0: folder containing Wasm binaries, 1: program, optionally 2: --no-precompile"
 
 path = sys.argv[1]
 program = sys.argv[2]
 program_orig = program.split("-opt")[0]
 
+precompile = True
+if "--no-precompile" in sys.argv:
+    precompile = False
+
 config = Config()
 config.wasm_tail_call = True
+
 
 # mapping for pretty print functions
 def pp_function_not_found(value, memory, store):
     print("pp_function not found, please specify in run-wasmtime.py")
 
+
 pp_function_map = {
-    "demo1" :  pp.print_list_sexp(pp.print_bool),
-    "demo2" :  pp.print_list_sexp(pp.print_bool),
-    "list_sum" :  pp.print_nat_sexp,
+    "demo1": pp.print_list_sexp(pp.print_bool),
+    "demo2": pp.print_list_sexp(pp.print_bool),
+    "list_sum": pp.print_nat_sexp,
     "vs_easy": pp.print_bool,
     "vs_hard": pp.print_bool,
     "binom": pp.print_nat_sexp,
@@ -43,6 +49,7 @@ if program_orig not in pp_function_map:
     print(f"Please specify pp function for {program_orig} in run-wasmtime.py")
     exit(1)
 
+
 # Our module needs two imports
 def print_int(n):
     sys.stdout.write(str(n))
@@ -59,9 +66,15 @@ print_int_stdout = Func(store, FuncType([ValType.i32()], []), print_int)
 
 # Here we compile a `Module` which is then ready for instantiation
 start_startup = time.time()
-module = Module.from_file(
-    store.engine, os.path.join(path, f"CertiCoq.Benchmarks.tests.{program}.wasm")
-)
+
+if precompile:
+    module = Module.deserialize_file(
+        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.tests.{program}.cwasm")
+    )
+else:
+    module = Module.from_file(
+        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+    )
 
 # instantiate module
 if len(module.imports) == 0:
