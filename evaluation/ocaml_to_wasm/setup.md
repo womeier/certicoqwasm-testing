@@ -14,7 +14,8 @@ To run all benchmarks and print time, run `python benchmark.py --folder binaries
 The coqprime binary was obtained by extracting the validation of a 100 digit prime to OCaml code, using the Coqprime library.
 Coqprime uses Coq's unsigned 63-bit integers, and the extracted OCaml code assumes the existence of a `Uint63` module, but this is not created as part of the extraction.
 An implementation of this can be found in the Coq kernel, see <https://github.com/coq/coq/blob/master/kernel/uint63_31.ml>. 
-Note that to compile it with wasm_of_ocaml, it is important that it is the version of the module that uses *boxed* 64-bit integers (the file `uint63_31.ml`) to represent Coq's 63-bit integers.
+Note that to compile it with wasm_of_ocaml, it is important that it is the version of the module that uses *boxed* 64-bit integers (the file `uint63_31.ml`) to represent Coq's 63-bit integers, 
+as wasm_of_ocaml currently does not properly support using OCaml's 63-bit integers (which is used in the file `uint63_63.ml`).
 
 To link the extracted code with the module, we manually modified the code in the `uint63_31.ml` file to remove the to/ from float functions.
 Additionally, we modified the code in the extracted OCaml file to make sure that it used the correct functions from the Uint63 module, 
