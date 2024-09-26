@@ -79,5 +79,6 @@ make run-concordium-test
 ```
 
 # Other
-- The script `wasm_to_coq.py` takes a given .wasm file and outputs a Coq file, importing the binary to WasmCert-Coq.
+- Small example wasm programs in `examples/wasm/`
+- Small example proofs with WasmCert in `examples/wasmcert/` (including a script `wasm_to_coq.py` to import .wasm file to Coq)
 - Compile an example program with CertiCoq-Wasm and run the generated Wasm binary: `make sha` or `make sha_explicit`.

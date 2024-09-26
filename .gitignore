@@ -16,6 +16,8 @@
 *.vok
 *.vos
 Makefile.coq
+.Makefile.coq.d
+Makefile.coq.conf
 Makefile.conf
 Makefile.plugin.conf
 
