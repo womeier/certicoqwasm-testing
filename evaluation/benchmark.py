@@ -231,7 +231,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
     if engine not in ["wasmtime", "wasmtime-compile", "node"]:
         print("Expected wasmtime or node runtime.")
         exit(1)
-    if engine in ["wasmtime", "wasmtime-compile"]:
+    if engine == "wasmtime-compile":
         ensure_wasmtime_same_version()
     if runs <= 0:
         print("Expected at least one run.")
