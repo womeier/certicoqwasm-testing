@@ -79,6 +79,14 @@ def get_engine_version(engine):
         exit(1)
 
 
+def ensure_wasmtime_same_version():
+    version_lib = get_engine_version("wasmtime").split("(")[1][:-1]
+    version_standalone = get_engine_version("wasmtime-compile").split("(")[1][:-1]
+    if version_lib != version_standalone:
+        print(f"Found two different version of wasmtime: standalone {version_standalone} and python-lib {version_lib}. They need to be the same.")
+        exit(1)
+
+
 def program_opt_name(program, flags):
     flags = map(lambda f: f.replace("-", ""), flags)
     return f"{program}-opt_{'-'.join(flags)}"
@@ -223,6 +231,8 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
     if engine not in ["wasmtime", "wasmtime-compile", "node"]:
         print("Expected wasmtime or node runtime.")
         exit(1)
+    if engine in ["wasmtime", "wasmtime-compile"]:
+        ensure_wasmtime_same_version()
     if runs <= 0:
         print("Expected at least one run.")
         exit(1)
