@@ -2,39 +2,42 @@
 
 This repo contains scripts and examples for testing [CertiCoq-Wasm](https://github.com/womeier/certicoqwasm).
 
-## Requirements & Setup
-### For running the benchmarks
-- Python 3
-- Node.js (version 22 or higher)
-- binaryen (version 117 or higher)
-- Rust (e.g. 1.77) and wasm-tools (cargo install wasm-tools)
-- wabt
-- wasmtime and wasmtime-py, most recent version (at least 18)
-
-### For development
-- CertiCoq with wasm backend: [CertiCoq-Wasm](https://github.com/womeier/certicoqwasm)
-
-
-## Evaluation
-### How to run CertiCoq-Wasm binaries
-To evaluate CertiCoq-Wasm binaries with Node.js, run the following in `evaluation/`:
+## Setup (Linux/Mac)
+- CertiCoq-Wasm ([installation](https://github.com/womeier/certicoqwasm))
+- Node.js ([installation](https://nodejs.org/en/download/package-manager), version 22 or higher)
+- wasm-tools (cargo install wasm-tools)
 ```
-./benchmark.py --engine=node --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt --coalesce-locals
+# Check the setup
+git clone https://github.com/womeier/certicoqwasm-testing
+cd certicoqwasm-testing/examples/certicoqwasm && make
 ```
 
-To evaluate CertiCoq-Wasm binaries with wasmtime, run the following in `evaluation/`:
-```
-./benchmark.py --engine=wasmtime --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt --coalesce-locals
-```
+## Usage
+For some small examples see `foo.v`, `sha.v` and the Makefile in `examples/certicoqwasm/`.
+Compiling each Coq file generates a `.wasm` file that can be run with e.g. Node.js, run `make help` to see how.
 
-To evaluate CertiCoq-Wasm binaries with wasmtime-compile, run the following in `evaluation/`:
-```
-./benchmark.py --engine=wasmtime-compile --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt --coalesce-locals
-```
+The JavaScript files specify pretty-printing. For Coq's most common types we have pp functions in evaluation/pp.js.
+The generation of pp functions is not yet automated, the reader is welcome to create an issue for help.
+(We currently use CertiCoq-Wasm's `debugging` branch and `CertiCoq Generate Wasm -debug` to get the constructor environment,
+and the constructors' ordinals, they're the same as with CertiCoq's C backend.)
 
-Note, that wasmtime-compile is only supported for the recent versions of CertiCoq-Wasm.
+## Performance Evaluation
+### Setup
+- wabt (apt install wabt)
+- binaryen (nix profile install nixpkgs#binaryen, version 117 or higher)
+- wasmtime (nix profile install nixpkgs#wasmtime, most recent version, at least version 18)
+- python bindings for wasmtime (pip install wasmtime, must be same version as wasmtime)
 
-### How to add new CertiCoq-Wasm binaries for evaluation
+```
+# in evaluation/
+./benchmark.py --engine=node --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt -O2
+./benchmark.py --help
+```
+<details>
+<summary> More evaluation </summary>
+<br>
+
+### Adding new CertiCoq-Wasm binaries for evaluation
 1) Create branch in main repo `benchmarks_<NAME>`
 1) Create folder with name `<NAME>` in `./evaluation/binaries/`, put binaries in it
 3) Insert folder with short description in `./evaluation/benchmark.py`, possibly update program list
@@ -64,21 +67,22 @@ To evaluate the extraction via Malfunction (more [information](./evaluation/malf
 ```
 ./benchmark.py --folder ./binaries/
 ```
+<br>
+</details>
 
-# Demos
-### SHA256 website demo
+## Demo applications
+### SHA256 website demo (integrate with JavaScript)
 In `demo_website_sha256/`, start dev-browser by:
 ```
 make develop
 ```
 
-### Blockchain demo
+### Blockchain demo (integrate with Wasm)
 In `demo_blockchain_smartcontract/`, run some tests (more [information](./demo_blockchain_smartcontract/)) for the smart contract `counter` by:
 ```
 make run-concordium-test
 ```
 
-# Other
-- Small example wasm programs in `examples/wasm/`
-- Small example proofs with WasmCert in `examples/wasmcert/` (including a script `wasm_to_coq.py` to import .wasm file to Coq)
-- Compile an example program with CertiCoq-Wasm and run the generated Wasm binary: `make sha` or `make sha_explicit`.
+## Miscellaneous
+- Small Wasm example programs in `examples/wasm/`
+- Small WasmCert example proofs in `examples/wasmcert/` (including a script `wasm_to_coq.py` to import .wasm file to Coq)

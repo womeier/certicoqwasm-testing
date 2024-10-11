@@ -4,22 +4,13 @@ const bytes = fs.readFileSync('./foo.wasm');
 const print_bool = (value, dataView) => {
   if (value & 1) {
     switch (value >> 1) {
-      case 0: process.stdout.write('true');
-      case 1: process.stdout.write('false');
+      case 0: process.stdout.write('true'); break;
+      case 1: process.stdout.write('false'); break;
     }
   }
 };
 
-const importObject = {
-  env: {
-    write_int(value) {
-      process.stdout.write(value.toString());
-    },
-    write_char(value) {
-      process.stdout.write(String.fromCharCode(value));
-    },
-  },
-};
+const importObject = { env: {} };
 
 (async () => {
   const object = await WebAssembly.instantiate(
@@ -38,7 +29,7 @@ const importObject = {
     print_bool(res_value, dataView);
 
     const bytes = object.instance.exports.bytes_used.value;
-    console.log(`\n====> used ${bytes} bytes of memory, took ${(stop - start)} (Node.js) ms.`);
+    console.log(`\n====> used ${bytes} bytes of memory, took ${(stop - start)} ms (Node.js).`);
   } catch (error) {
     console.log(error);
     process.exit(1);

@@ -29,8 +29,8 @@ programs = [
     "ack_3_9",
     "sm_gauss_nat",
     "sm_gauss_N",
-#    "sm_gauss_PrimInt", # comment in for non-cps-primops-may-21-24
-#    "coqprime", # comment in for wasmgc, and others supporting primops
+#    "sm_gauss_PrimInt", # comment in for non-cps-primops-may-21-24 and later
+#    "coqprime", # comment in for wasmgc, and non-cps-grow-mem-less-often-august-30-24 or later
 ]
 
 
@@ -218,12 +218,12 @@ def org_table(tests, measures, results):
     print(org_string)
 
 @click.command()
-@click.option("--engine", type=str, help="Wasm engine", default="node")
-@click.option("--runs", type=int, help="Number of runs", default=10)
-@click.option("--memory-usage", is_flag=True, help="Print lin.mem. used", default=False)
+@click.option("--engine", type=str, help="Wasm engine (node|wasmtime|wasmtime-compile).", default="node")
+@click.option("--runs", type=int, help="Number of runs.", default=10)
+@click.option("--memory-usage", is_flag=True, help="Print linear memory usage.", default=False)
 @click.option("--binary-size", is_flag=True, help="Print binary size", default=False)
-@click.option("--folder", type=str, help="Folder to Wasm binaries", multiple=True, required=True)
-@click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag", multiple=True)
+@click.option("--folder", type=str, help="Path to folder with Wasm binaries.", multiple=True, required=True)
+@click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag.", multiple=True)
 @click.option("--wasmgc-cast-nochecks", is_flag=True, help="Disables runtime checks for casts.")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
 @click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)

@@ -1,20 +1,12 @@
-import { print_i63, print_compare, print_bool, print_nat_sexp, print_nat_notation, print_list_sexp, print_list_notation, print_option, print_prod, print_positive_sexp, print_N_sexp, print_Z_sexp, print_compcert_byte_sexp } from './evaluation/pp.js';
+import { print_i63, print_compare, print_bool, print_nat_sexp, print_nat_notation, print_list_sexp, print_list_notation, print_option, print_prod, print_positive_sexp, print_N_sexp, print_Z_sexp, print_compcert_byte_sexp } from '../../evaluation/pp.js';
 
 import * as fs from 'fs';
 
 const bytes = fs.readFileSync('./sha.wasm');
+// Specify pp function.
 const print_sha = (value, dataView) => print_list_sexp(value, dataView, print_compcert_byte_sexp);
 
-const importObject = {
-  env: {
-    write_int(value) {
-      process.stdout.write(value.toString());
-    },
-    write_char(value) {
-      process.stdout.write(String.fromCharCode(value));
-    },
-  },
-};
+const importObject = { env: {} };
 
 (async () => {
   const object = await WebAssembly.instantiate(
@@ -26,14 +18,13 @@ const importObject = {
     object.instance.exports.main_function();
     const stop = Date.now();
 
-    const memory = object.instance.exports.memory;
-    const dataView = new DataView(memory.buffer);
+    const dataView = new DataView(object.instance.exports.memory.buffer);
     const res_value = object.instance.exports.result.value;
     process.stdout.write('====> ');
     print_sha(res_value, dataView);
 
     const bytes = object.instance.exports.bytes_used.value;
-    console.log(`\n====> used ${bytes} bytes of memory, took ${(stop - start)} (Node.js) ms.`);
+    console.log(`\n====> used ${bytes} bytes of memory, took ${(stop - start)} ms (Node.js).`);
   } catch (error) {
     console.log(error);
     process.exit(1);
