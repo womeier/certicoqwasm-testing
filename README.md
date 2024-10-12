@@ -22,6 +22,8 @@ The generation of pp functions is not yet automated, the reader is welcome to cr
 (We currently use CertiCoq-Wasm's `debugging` branch and `CertiCoq Generate Wasm -debug` to get the constructor environment,
 and the constructors' ordinals, they're the same as with CertiCoq's C backend.)
 
+Note that a `package.json` may be required for JavaScript imports.
+
 ## Performance Evaluation
 ### Setup
 - wabt (apt install wabt)
