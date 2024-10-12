@@ -16,7 +16,8 @@ cd certicoqwasm-testing/examples/certicoqwasm && make
 For some small examples see `foo.v`, `sha.v` and the Makefile in `examples/certicoqwasm/`.
 Compiling each Coq file generates a `.wasm` file that can be run with e.g. Node.js, run `make help` to see how.
 
-The JavaScript files specify pretty-printing. For Coq's most common types we have pp functions in evaluation/pp.js.
+The JavaScript files specify pretty-printing the result. For Coq's most common types we have pp functions in `evaluation/pp.js`, see `sha.js` on how to use.
+
 The generation of pp functions is not yet automated, the reader is welcome to create an issue for help.
 (We currently use CertiCoq-Wasm's `debugging` branch and `CertiCoq Generate Wasm -debug` to get the constructor environment,
 and the constructors' ordinals, they're the same as with CertiCoq's C backend.)
