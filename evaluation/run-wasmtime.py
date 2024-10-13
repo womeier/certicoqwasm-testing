@@ -45,6 +45,37 @@ pp_function_map = {
     "coqprime": pp.print_bool,
 }
 
+
+if "evaluation/binaries" in os.path.abspath(path):
+    folder = os.path.abspath(path).split("/")[-1]
+    # benchmarks before swapping bool constructors
+    old_versions = [
+       "cps-feb-01-24", "cps-0aryfast-feb-13-24", "non-cps-feb-07-24", "non-cps-0aryfast-return-feb-26-24",
+       "non-cps-ifs-unnested-mrch-22-24", "non-cps-grow-mem-func-mrch-24-24",
+       "non-cps-br_if-apr-12-24", "non-cps-wasmgc-may-16-24", "non-cps-primops-may-21-24",
+       "non-cps-no-imports-june-15-24", "cps-grow-mem-less-often-september-18-24",
+       "non-cps-grow-mem-less-often-august-30-24",
+    ]
+    if folder in old_versions:
+        pp_function_map = {
+            "demo1": pp.print_list_sexp(pp.print_bool_old_dont_use),
+            "demo2": pp.print_list_sexp(pp.print_bool_old_dont_use),
+            "list_sum": pp.print_nat_sexp,
+            "vs_easy": pp.print_bool_old_dont_use,
+            "vs_hard": pp.print_bool_old_dont_use,
+            "binom": pp.print_nat_sexp,
+            "color": pp.print_prod(pp.print_Z_sexp, pp.print_Z_sexp),
+            "sha_fast": pp.print_list_sexp(pp.print_compcert_byte_sexp),
+            "ack_3_9": pp.print_nat_sexp,
+            "even_10000": pp.print_bool_old_dont_use,
+            "bernstein_yang": pp.print_Z_sexp,
+            "sm_gauss_nat": pp.print_option(pp.print_nat_sexp),
+            "sm_gauss_N": pp.print_option(pp.print_N_sexp),
+            "sm_gauss_PrimInt": pp.print_option(pp.print_i63),
+            "coqprime": pp.print_bool_old_dont_use,
+        }
+
+
 if program_orig not in pp_function_map:
     print(f"Please specify pp function for {program_orig} in run-wasmtime.py")
     exit(1)

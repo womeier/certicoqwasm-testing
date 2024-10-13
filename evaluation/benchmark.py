@@ -51,7 +51,10 @@ def get_info(path):
         "non-cps-wasmgc-may-16-24": "WasmGC demo (unverified), based on apr-12-24",
         "non-cps-primops-may-21-24": "new constr. repr. + primops, based on apr-12-24",
         "non-cps-no-imports-june-15-24": "removed imports, otherwise may-21-24", # this will be removed in the future
+
+        # also bool constructors swapped https://github.com/CertiCoq/certicoq/pull/100
         "non-cps-grow-mem-less-often-august-30-24": "track available mem statically, only grow when necessary",
+        "non-cps-cleanup-oct-13-24": "renamed globals, cleanup",
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]

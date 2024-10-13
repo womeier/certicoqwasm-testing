@@ -13,7 +13,15 @@ def load_i64(addr, memory, store):
     bs = memory.read(store, addr, addr + 8)
     return int.from_bytes(bs[::-1])
 
+# the bool constructors are swapped, see https://github.com/CertiCoq/certicoq/pull/100
 def print_bool(value, memory, store):
+    assert (value & 1), "expected unboxed constr"
+    if value >> 1 == 0:
+        write("false")
+    elif value >> 1 == 1:
+        write("true")
+
+def print_bool_old_dont_use(value, memory, store):
     assert (value & 1), "expected unboxed constr"
     if value >> 1 == 0:
         write("true")

@@ -85,8 +85,6 @@ for program in tqdm(programs):
         # RUN
         r = subprocess.run(
             [
-# "python3",
-# "./run-wasmtime.py",
                 "node",
                 "./run-node.js",
                 f"./binaries/{folder}/",
