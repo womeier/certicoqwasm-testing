@@ -50,7 +50,7 @@ if program_orig not in pp_function_map:
     exit(1)
 
 
-# Our module needs two imports
+# Old version of our module needed the imports
 def print_int(n):
     sys.stdout.write(str(n))
 
@@ -113,7 +113,11 @@ else:
 
 print()
 
-bytes_used = instance.exports(store)["bytes_used"].value(store)
+try:
+    # old name bytes_used renamed into mem_ptr
+    bytes_used = instance.exports(store)["bytes_used"].value(store)
+except KeyError:
+    bytes_used = instance.exports(store)["mem_ptr"].value(store)
 
 print(
     f"Benchmark {path}:"

@@ -4,7 +4,7 @@ import { print_i63, print_compare, print_bool, print_nat_sexp, print_nat_notatio
 // Usage: node run-node.js folder/ demo1
 
 // This script is backwards compatible with some older versions of CertiCoq-wasm.
-// For the reader, likely only the most recent version is of interest, ../examples/certicoqwasm/sha.js may be easier to use.
+// For the reader, likely only the latest version is of interest, ../examples/certicoqwasm/sha.js should be easier to use.
 
 const pp_map = {
     "demo1": (val, dataView) => print_list_sexp(val, dataView, print_bool),
@@ -83,10 +83,21 @@ let importObject = {
         const stop_main = Date.now();
         const time_main = stop_main - start_main;
 
-        let out_of_mem = obj.instance.exports.result_out_of_mem;
-        let bytes_used = obj.instance.exports.bytes_used;
+        var out_of_mem = obj.instance.exports.result_out_of_mem;
+        var bytes_used = obj.instance.exports.bytes_used;
+
+        // backwards compatibility
+        if (out_of_mem == undefined) {
+            // variable renamed from result_out_of_mem into out_of_mem
+            out_of_mem = obj.instance.exports.out_of_mem;
+        }
         if (bytes_used == undefined) {
-            // constructor repr: WasmGC
+            // variable renamed from bytes_used into mem_ptr
+            bytes_used = obj.instance.exports.mem_ptr;
+        }
+
+        if (bytes_used == undefined) {
+            // still undefined: we got a WasmGC binary
             bytes_used = -1; // unknown mem usage: TODO ask v8
             console.log(`Benchmark ${path}: {{"time_startup": "${time_startup}", "time_main": "${time_main}", "time_pp": "0", "bytes_used": "${bytes_used}", "program": "${program}"}} ms, bytes.`);
             process.exit(0);
