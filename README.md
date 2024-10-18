@@ -30,10 +30,9 @@ Note that a `package.json` may be required for JavaScript imports.
 - binaryen (nix profile install nixpkgs#binaryen, version 117 or higher)
 - wasmtime (nix profile install nixpkgs#wasmtime, most recent version, at least version 18)
 - python bindings for wasmtime (pip install wasmtime, must be same version as wasmtime)
-
 ```
 # in evaluation/
-./benchmark.py --engine=node --folder ./binaries/non-cps-grow-mem-less-often-august-30-24 --wasm-opt -O2
+./benchmark.py --engine=node --folder ./binaries/non-cps-cleanup-oct-13-24 --wasm-opt -O2
 ./benchmark.py --help
 ```
 <details>
