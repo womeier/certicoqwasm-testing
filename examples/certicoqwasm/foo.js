@@ -1,11 +1,12 @@
 import * as fs from 'fs';
 const bytes = fs.readFileSync('./foo.wasm');
 
+ // the constructors of bools are swapped, see https://github.com/CertiCoq/certicoq/pull/100
 const print_bool = (value, dataView) => {
   if (value & 1) {
     switch (value >> 1) {
-      case 0: process.stdout.write('true'); break;
-      case 1: process.stdout.write('false'); break;
+      case 0: process.stdout.write('false'); break;
+      case 1: process.stdout.write('true'); break;
     }
   }
 };
