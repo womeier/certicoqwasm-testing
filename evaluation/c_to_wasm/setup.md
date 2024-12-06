@@ -17,7 +17,7 @@ Make sure `emsdk` is installed and that the `emcc` command is available.
 From certicoq/ directory
 1. `cd benchmarks`
 2. Generate C code for the benchmarks. Make sure to also generate glue code and have a main/ 'driver' file to run the benchmark.
-3. To compile a benchmark, run `emcc -o <benchmark>.js -w -Wno-everything -I../plugin/runtime <benchmark>_main.c ../plugin/runtime/gc_stack.c CertiCoq.Benchmarks.tests.<benchmark>.c glue_<benchmark>.c -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=1GB -sSTACK_SIZE=500000000`
+3. To compile a benchmark, run `emcc -o <benchmark>.js -w -Wno-everything -I../plugin/runtime <benchmark>_main.c ../plugin/runtime/gc_stack.c CertiCoq.Benchmarks.wasm.tests.<benchmark>.c glue_<benchmark>.c -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=1GB -sSTACK_SIZE=500000000`
 4. This will create a binary file `binom.wasm` and a JavaScript scaffolding file `binom.js`
 5. To run the benchmark, execute e.g. `node --stack-size=1000000 binom.js`.
 
@@ -25,7 +25,7 @@ To use the pretty printing functions defined in the C glue code from the JS scaf
 
 The exact command that was used to compile the binaries (optionally add an optimization level):
 ```
-emcc -o <benchmark>.js -w -Wno-everything -I../plugin/runtime <benchmark>_main_wasm_no_pp.c ../plugin/runtime/gc_stack.c CertiCoq.Benchmarks.tests.<benchmark>.c ../plugin/runtime/prim_int63.c glue_<benchmark>.c -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=1GB -sSTACK_SIZE=500000000 -sEXPORTED_FUNCTIONS=_main,_pp -sEXPORTED_RUNTIME_METHODS=ccall
+emcc -o <benchmark>.js -w -Wno-everything -I../plugin/runtime <benchmark>_main_wasm_no_pp.c ../plugin/runtime/gc_stack.c CertiCoq.Benchmarks.wasm.tests.<benchmark>.c ../plugin/runtime/prim_int63.c glue_<benchmark>.c -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=1GB -sSTACK_SIZE=500000000 -sEXPORTED_FUNCTIONS=_main,_pp -sEXPORTED_RUNTIME_METHODS=ccall
 ```
 
 Note that the stack size and initial memory was increased a lot to allow some of the benchmarks to run.

@@ -100,11 +100,11 @@ start_startup = time.time()
 
 if precompile:
     module = Module.deserialize_file(
-        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.tests.{program}.cwasm")
+        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.wasm.tests.{program}.cwasm")
     )
 else:
     module = Module.from_file(
-        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.tests.{program}.wasm")
+        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.wasm.tests.{program}.wasm")
     )
 
 # instantiate module

@@ -29,7 +29,7 @@ print("Checking that all binaries have a different sha256 sum.")
 hashes = []
 for prog in programs:
     for folder in folders:
-        file = f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{prog}.wasm"
+        file = f"./binaries/{folder}/CertiCoq.Benchmarks.wasm.tests.{prog}.wasm"
         if not os.path.exists(file):
             print(f"Didn't find {file}.")
             exit(1)
@@ -60,8 +60,8 @@ for program in tqdm(programs):
     for folder in folders:
         # RUN wasm-opt
         program_opt = f"{program}-opt_coalesce-locals"
-        path_program_opt = f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm"
-        path_program = f"./binaries/{folder}/CertiCoq.Benchmarks.tests.{program}.wasm"
+        path_program_opt = f"./binaries/{folder}/CertiCoq.Benchmarks.wasm.tests.{program_opt}.wasm"
+        path_program = f"./binaries/{folder}/CertiCoq.Benchmarks.wasm.tests.{program}.wasm"
         if not os.path.exists(path_program_opt):
             r = subprocess.run(
                 [
@@ -93,7 +93,7 @@ for program in tqdm(programs):
             capture_output=True,
         )
         if r.returncode != 0:
-            print(f"{folder}/CertiCoq.Benchmarks.tests.{program_opt}.wasm returned non-0 return code.")
+            print(f"{folder}/CertiCoq.Benchmarks.wasm.tests.{program_opt}.wasm returned non-0 return code.")
             print(r.stderr.decode("utf-8"))
             exit(1)
 
