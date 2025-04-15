@@ -22,17 +22,16 @@ def insert(certicoq_wasm_file, insert_file, out_file):
                 f_out.write("")
 
             with open(out_file, "a") as f_out:
-                for line in wat_certicoqwasm.split("\n"):
-                    # insert custom wasm file after table
-                    if "(table" in line:
-                        f_out.write(line + "\n")
-                        f_out.write(i + "\n")
-
-                    # concordium limits the number of exported functions, comment out
-                    elif "(export \"_" in line:
+                # drop last ")" and newline
+                for line in wat_certicoqwasm.split("\n")[:-2]:
+                    if '(export "_' in line:
+                        # concordium limits the number of exported functions, comment out
                         f_out.write(";; " + line + "\n")
                     else:
                         f_out.write(line + "\n")
+
+                # insert at the end
+                f_out.write(i + "\n" + ")")
 
 
 if __name__ == "__main__":
