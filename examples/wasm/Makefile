@@ -14,6 +14,9 @@ run-tc: tc.wasm
 #	@node --experimental-wasm-typed_funcref --experimental-wasm-return-call --experimental-wasm-gc add.js
 	@node tc.js
 
+run-bintree: bintree.wasm
+	@echo "Running bintree.{js, wasm} with node..."
+	@node bintree.js
 
 clean:
 	rm -r *.wasm
