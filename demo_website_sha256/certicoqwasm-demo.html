@@ -74,7 +74,7 @@ Web Crypto API:
     await fetch("./files/certicoqwasm-demo/sha_fast.wasm")
       .then(response => response.arrayBuffer())
       .then(buffer => WebAssembly.compile(buffer))
-      .then(module => {return new WebAssembly.Instance(modulde, importObject)})
+      .then(module => {return new WebAssembly.Instance(module, importObject)})
       .then(instance => {wasmInstance = instance; console.log("Compiled successfully.")},
             error => showError("Failed to load wasm file. (This may happen with a slow internet connection.)"));
 
