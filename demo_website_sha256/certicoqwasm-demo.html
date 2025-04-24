@@ -60,7 +60,7 @@ table {
 </div>
 
 <script type="module">
-  import { tailCall } from "https://womeier.de/files/certicoqwasm-demo/wasm-feature-detect.js";
+  import { tailCall } from "./files/certicoqwasm-demo/wasm-feature-detect.js";
 
   let wasmInstance = null;
 
@@ -77,18 +77,9 @@ table {
     console.log("Tail calls supported.")
     let input_elem = document.getElementById("sha-input");
 
-    // relict, not used currently
-    function write_int (value) {}
-    function write_char (value) {}
-    let importObject = {
-      env: {
-        write_char: write_char,
-        write_int: write_int,
-      }
-    };
-    // await fetch("https://womeier.de/files/certicoqwasm-demo/sha_fast_coalesce_locals.wasm")
-    // to fix CORS: chromium --disable-web-security --user-data-dir=. index.html
-    await fetch("./files/certicoqwasm-demo/sha_fast_coalesce_locals.wasm")
+    let importObject = { env: {} };
+
+    await fetch("./files/certicoqwasm-demo/sha_fast.wasm")
       .then(response => response.arrayBuffer())
       .then(buffer => WebAssembly.compile(buffer))
       .then(module => {return new WebAssembly.Instance(module, importObject)})
@@ -123,8 +114,10 @@ table {
 
   function bytes_list_of_string(string) {
     let string_bytes = new TextEncoder("utf-8").encode(string);
-    let mem = wasmInstance.exports.memory;
-    let array = new Uint32Array(mem.buffer);
+    let mem = new Uint32Array(wasmInstance.exports.memory.buffer);
+
+    /* Wasm binaries created by an earlier version included a function grow_mem_if_necessary which was later removed (inlined)
+       TODO: we should use the js API to grow the memory, otherwise binaries might crash when the mem_ptr points outside the linear memory
 
     // grow linear mem by some bytes: each cons needs 3 i32s = 3*4 bytes
     let bytes = 4 * 3 * string_bytes.length;
@@ -133,26 +126,27 @@ table {
     for (var i = 0; i < pages; i++) {
       // only grows one page per call
       wasmInstance.exports.grow_mem_if_necessary(bytes);
-      if (wasmInstance.exports.result_out_of_mem == 1) {
+      if (wasmInstance.exports.out_of_mem == 1) {
         console.log("Growing linear mem failed.");
         return null;
 //        return "ERROR: ran out of memory";
       }
     }
+    */
 
     let tag_cons = 0;
     let tag_nil = 1;
 
     let current = tag_nil;
     for (var i = string_bytes.length - 1; i >= 0; i--) {
-      let next = wasmInstance.exports.bytes_used.value;
+      let next = wasmInstance.exports.mem_ptr.value;
       let tag_byte = string_bytes[i] * 2 + 1;
       // console.log(tag_byte);
-      array[next/4] = tag_cons;
-      array[next/4 + 1] = tag_byte;
-      array[next/4 + 2] = current;
+      mem[next/4] = tag_cons;
+      mem[next/4 + 1] = tag_byte;
+      mem[next/4 + 2] = current;
       current = next;
-      wasmInstance.exports.bytes_used.value += 12;
+      wasmInstance.exports.mem_ptr.value += 12;
     }
     return current;
   }
@@ -202,18 +196,16 @@ table {
     if (string.length > 10000) {
       return "ERROR: string length limited to 10k characters"
     }
-    // bytes_used is export name of global_mem_ptr (ptr we increase after every memory allocation)
-    // TODO memory optimization: only run the main function once at initialization, remember the global_mem_ptr
-    // and reset the global_mem_ptr to the remembered value before every computation of the sha256 sum, thus freeing the
-    // memory used by the previous sha256 computation
-    wasmInstance.exports.bytes_used.value = 0;
+
+    // reset mem_ptr (overwrites linear mem from previous sha256 calculation)
+    wasmInstance.exports.mem_ptr.value = 0;
     wasmInstance.exports.main_function();
+
     let res = wasmInstance.exports.result.value;
-    let mem = wasmInstance.exports.memory;
-    let array = new Uint32Array(mem.buffer);
-    // console.log("TAG: " + array[res/4] + ", FIDX: " + array[res/4 + 1]);
-    // prints fidx of _97__CertiCoq_Benchmarks_tests_sha_fast_198
-    let envAddr = array[res/4 + 2];
+    let mem = new Uint32Array(wasmInstance.exports.memory.buffer);
+    // console.log("TAG: " + mem[res/4] + ", FIDX: " + mem[res/4 + 1]);
+    // prints fidx of _97__Demo_sha256_webdemo_sha_fast_198
+    let envAddr = mem[res/4 + 2];
     // console.log(envAddr);
 
     let bytesInput = bytes_list_of_string(string);
@@ -228,8 +220,8 @@ table {
 
     try {
       // console.log(wasmInstance.exports);
-      await wasmInstance.exports._97__CertiCoq_Benchmarks_tests_sha_fast_198(envAddr, bytesInput);
-      if (wasmInstance.exports.result_out_of_mem.value == 1) {
+      await wasmInstance.exports._97__Demo_sha256_webdemo_sha_fast_198(envAddr, bytesInput);
+      if (wasmInstance.exports.out_of_mem.value == 1) {
         console.log("Computing sha_fast ran out of memory.")
         return "ERROR: ran out of memory";
       } else {

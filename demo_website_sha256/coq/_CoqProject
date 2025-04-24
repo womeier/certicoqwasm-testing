@@ -1,0 +1,4 @@
+-R ./ Demo
+-arg -w -arg -deprecated
+
+sha256_webdemo.v

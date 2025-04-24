@@ -1,0 +1,4 @@
+-R ./ Demo.lib
+-arg -w -arg -deprecated
+
+sha256.v
