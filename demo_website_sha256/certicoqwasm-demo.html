@@ -1,29 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
 <head>
-  <title> CertiCoq-Wasm demo  </title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
-<noscript> JavaScript is required for this demo, please please use a browser with JavaScript support such as Firefox or Chrome. </noscript>
-<style>
-body {
-margin-left: 3rem;
-margin-right: 3rem;
-}
-table {
-  margin-top: 2rem;
-}
-.info {
-  margin-top:2rem;
-  width:700px;
-}
-#div-demo {
-  margin-top:4rem;
-}
 
+<title> CertiCoq-Wasm demo  </title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/pico.min.css">
+
+<style>
 #init-error {
-  margin-top:3rem;
   width:700px;
   padding-top:10px;
   padding-left:10px;
@@ -36,27 +20,35 @@ table {
 }
 </style>
 
-<div class="info">
-  <h1> SHA-256 demo </h1>
-  This demo allows computing the <a href="https://en.wikipedia.org/wiki/SHA-2">SHA-256 sum</a> using the functional, <a href="https://dl.acm.org/doi/pdf/10.1145/2701415">verified implementation</a> (Section 4),
-  compiled to Wasm using <a href="https://womeier.de/files/certicoqwasm-coqpl24-abstract.pdf">CertiCoq-Wasm</a>.
-</div>
+</head>
 
+<body>
+
+<header class="container">
+  <noscript> JavaScript is required for this demo, please use a browser with JavaScript support such as Firefox or Chrome. </noscript>
+<hgroup>
+<div style="width:700px">
+  <h1> SHA-256 demo </h1>
+  This demo allows computing the <a href="https://en.wikipedia.org/wiki/SHA-2">SHA-256 sum</a> using a
+  <a href="https://dl.acm.org/doi/pdf/10.1145/2701415">provably correct</a> implementation in Coq.
+  This Coq <a href="https://github.com/womeier/certicoqwasm/blob/demo_sha256/benchmarks/tests.v">program</a>
+  was <a href="https://womeier.de/files/certicoqwasm-cpp25-paper.pdf">compiled</a>
+  to a <a href="https://en.wikipedia.org/wiki/WebAssembly">WebAssembly</a> module that is run directly in the browser.
+  Find the code of this site on <a href="https://github.com/womeier/certicoqwasm-testing?tab=readme-ov-file#demo-applications">GitHub</a>.
+</div>
+</hgroup>
+</header>
+
+<main class="container">
 <p id="init-error">
 
-<div id="div-demo" style="display:none">
-  <input type="text" id="sha-input" value="" placeholder="Enter string and press Enter" autofocus>
-  <br>
-  <table>
-  <tr>
-    <td> Our result: </td>
-    <td><span style="padding-left:20px" id="sha-res-ours"></span></td>
-  </tr>
-  <tr>
-    <td> Browser crypto lib: </td>
-    <td> <span style="padding-left:20px" id="sha-res-lib"></span></td>
-  </tr>
-  </table>
+<div id="div-demo" style="display:none; width: 50rem">
+<input type="text" id="sha-input" value="" placeholder="Enter string and press Enter" autofocus>
+CertiCoq-Wasm:
+<span style="padding-left:10px" id="sha-res-ours"></span>
+<br>
+Web Crypto API:
+<span style="padding-left:10px" id="sha-res-lib"></span>
 </div>
 
 <script type="module">
@@ -82,9 +74,9 @@ table {
     await fetch("./files/certicoqwasm-demo/sha_fast.wasm")
       .then(response => response.arrayBuffer())
       .then(buffer => WebAssembly.compile(buffer))
-      .then(module => {return new WebAssembly.Instance(module, importObject)})
+      .then(module => {return new WebAssembly.Instance(modulde, importObject)})
       .then(instance => {wasmInstance = instance; console.log("Compiled successfully.")},
-            error => showError("Failed to load and instantiate wasm file, please email Wolfgang."));
+            error => showError("Failed to load wasm file. (This may happen with a slow internet connection.)"));
 
     if (wasmInstance != null) {
       console.log("Initialization successful.")
@@ -238,5 +230,6 @@ table {
   }
 </script>
 
+</main>
 </body>
 </html>

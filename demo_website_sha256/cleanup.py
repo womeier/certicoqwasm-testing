@@ -8,6 +8,7 @@ keep = [
     "cleanup.py",
     "coq",
     "files",
+    "css",
     "certicoqwasm-demo.html",
     ".gitignore",
 ]
