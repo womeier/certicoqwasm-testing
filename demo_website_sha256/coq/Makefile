@@ -11,6 +11,7 @@ install: all
 clean: Makefile.coq
 	@+$(MAKE) -f Makefile.coq cleanall
 	@rm -f Makefile.coq Makefile.coq.conf
+	@make -C lib clean
 	@rm -f *.wasm *.wat *.ir
 
 Makefile.coq: _CoqProject

@@ -198,7 +198,7 @@ Proof.
   cbn.
   (* [dostep. apply r_simple. apply rs_binop_success.]
   doesn't work here, unification error with anonymous var. *)
-  dostep'. apply r_simple. apply rs_binop_success. reflexivity.
+  dostep'. apply r_simple. apply rs_binop_success=>//.
   apply rt_refl.
 Qed.
 
