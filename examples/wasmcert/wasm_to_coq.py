@@ -36,7 +36,8 @@ type_check = """Definition type_check_test_module :=
 """
 compute_type_check = "Compute type_check_test_module."
 
-file_name_out = file_name.replace(".", "_") + ".v"
+path, name = file_name.rsplit("/", 1)
+file_name_out = os.path.join(path, name.replace(".", "_") + ".v")
 if os.path.isfile(file_name_out):
     os.remove(file_name_out)
 
