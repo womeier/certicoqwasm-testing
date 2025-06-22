@@ -1,5 +1,3 @@
-From ExtLib Require Import Monads OptionMonad.
-
 From Coq Require Import
   ZArith List
   Strings.Byte.
@@ -13,8 +11,7 @@ From Wasm Require Import
 From mathcomp Require Import
   seq.
 
-Import ListNotations MonadNotation.
-Open Scope monad_scope.
+Import ListNotations.
 
 Module TestModule.
 (*
@@ -58,10 +55,11 @@ Definition test_module := {|
         |}]
 |}.
 
-
 Definition type_check_test_module :=
-  m <- test_module_opt ;;
-  module_type_checker m.
+  match test_module_opt with
+  | None => (None, String.EmptyString)
+  | Some m => module_type_checker m
+  end.
 
 Compute type_check_test_module.
 
