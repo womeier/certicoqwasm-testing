@@ -19,4 +19,4 @@ run-bintree: bintree.wasm
 	@node bintree.js
 
 clean:
-	rm -r *.wasm
+	rm -f *.wasm *_wasm.v
