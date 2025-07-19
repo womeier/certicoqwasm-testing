@@ -4,6 +4,7 @@ all: Makefile.coq
 
 # copies Wasm binary so it's used by local chromium demo
 install: all
+	# we used wasm-opt version 123
 	wasm-opt --enable-tail-call -O2 ./Demo.sha256_webdemo.sha_fast.wasm -o ./Demo.sha256_webdemo.sha_fast_O2.wasm
 	cp ./Demo.sha256_webdemo.sha_fast_O2.wasm ../files/certicoqwasm-demo/sha_fast.wasm
 
