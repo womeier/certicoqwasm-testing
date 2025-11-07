@@ -197,7 +197,9 @@ Web Crypto API:
     let mem = new Uint32Array(wasmInstance.exports.memory.buffer);
     // console.log("TAG: " + mem[res/4] + ", FIDX: " + mem[res/4 + 1]);
     // prints fidx of _97__Demo_sha256_webdemo_sha_fast_198
+    let fidx = mem[res/4 + 1];
     let envAddr = mem[res/4 + 2];
+    let shaFunc = wasmInstance.exports[Object.keys(wasmInstance.exports)[fidx]];
     // console.log(envAddr);
 
     let bytesInput = bytes_list_of_string(string);
@@ -212,7 +214,7 @@ Web Crypto API:
 
     try {
       // console.log(wasmInstance.exports);
-      await wasmInstance.exports._97__Demo_sha256_webdemo_sha_fast_198(envAddr, bytesInput);
+      await shaFunc(envAddr, bytesInput);
       if (wasmInstance.exports.out_of_mem.value == 1) {
         console.log("Computing sha_fast ran out of memory.")
         return "ERROR: ran out of memory";
