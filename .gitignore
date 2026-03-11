@@ -29,3 +29,5 @@ Makefile.plugin.conf
 *.h
 *.ir
 __pycache__/
+
+result

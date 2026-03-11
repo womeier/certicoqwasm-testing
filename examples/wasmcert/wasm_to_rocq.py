@@ -18,8 +18,8 @@ def b2s(b):
     return "x" + x
 
 template = f"""
-From Coq Require Import String List.
-From Coq.Strings Require Import Byte.
+From Stdlib Require Import String List.
+From Stdlib.Strings Require Import Byte.
 
 From Wasm Require Import binary_format_parser datatypes instantiation_func.
 

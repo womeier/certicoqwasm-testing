@@ -1,26 +1,29 @@
 # Testing CertiCoq-Wasm
 
 This repo contains scripts and examples for testing [CertiCoq-Wasm](https://github.com/womeier/certicoqwasm).
+CertiCoq-Wasm has been merged into upstream [CertiRocq](https://github.com/certirocq/certirocq).
 
-## Setup (Linux/Mac)
-- CertiCoq-Wasm ([installation](https://github.com/womeier/certicoqwasm))
-- Node.js ([installation](https://nodejs.org/en/download/package-manager), version 22 or higher)
-- wasm-tools (cargo install wasm-tools)
+## Setup (Nix)
 ```
-# Check the setup
+cachix use womeier
+export NIXPKGS_ALLOW_UNFREE=1
+
 git clone https://github.com/womeier/certicoqwasm-testing
-cd certicoqwasm-testing/examples/certicoqwasm && make
+nix develop
+
+# Check the setup
+cd examples/certicoqwasm && make
 ```
 
 ## Usage
 For some small examples see `foo.v`, `sha.v` and the Makefile in `examples/certicoqwasm/`.
-Compiling each Coq file generates a `.wasm` file that can be run with e.g. Node.js, run `make help` to see how.
+Compiling each Rocq file generates a `.wasm` file that can be run with e.g. Node.js, run `make help` to see how.
 
-The JavaScript files specify pretty-printing the result. For Coq's most common types we have pp functions in `evaluation/pp.js`, see `sha.js` on how to use.
+The JavaScript files specify pretty-printing the result. For Rocq's most common types we have pp functions in `evaluation/pp.js`, see `sha.js` on how to use.
 
 The generation of pp functions is not yet automated, the reader is welcome to create an issue for help.
 (We currently use CertiCoq-Wasm's `debugging` branch and `CertiCoq Generate Wasm -debug` to get the constructor environment,
-and the constructors' ordinals, they're the same as with CertiCoq's C backend.)
+and the constructors' ordinals, they're the same as with CertiRocq's C backend.)
 
 Note that a `package.json` may be required for JavaScript imports.
 
@@ -87,4 +90,4 @@ make run-concordium-test
 
 ## Miscellaneous
 - Small Wasm example programs in `examples/wasm/`
-- Small WasmCert example proofs in `examples/wasmcert/` (including a script `wasm_to_coq.py` to import .wasm file to Coq)
+- Small WasmCert example proofs in `examples/wasmcert/` (including a script `wasm_to_coq.py` to import .wasm file to Rocq)
