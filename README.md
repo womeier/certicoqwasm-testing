@@ -5,10 +5,9 @@ CertiCoq-Wasm has been merged into upstream [CertiRocq](https://github.com/certi
 
 ## Setup (Nix)
 ```
-cachix use womeier
-export NIXPKGS_ALLOW_UNFREE=1
+git clone https://github.com/womeier/certicoqwasm-testing && cd certicoqwasm-testing
 
-git clone https://github.com/womeier/certicoqwasm-testing
+cachix use womeier
 nix develop
 
 # Check the setup
