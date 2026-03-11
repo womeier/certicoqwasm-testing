@@ -22,4 +22,4 @@ jobs:
       # Enter Nix development environment and run a command
       - name: Run command in Nix environment
         run: |
-          nix develop --command "ls"
+          nix develop --command bash -c "make -C examples/certicoqwasm"
