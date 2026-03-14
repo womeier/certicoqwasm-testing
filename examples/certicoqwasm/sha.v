@@ -1,5 +1,5 @@
-From CertiCoq.Plugin Require Import CertiCoq.
-Require Import String.
+From CertiRocq.Plugin Require Import CertiRocq.
+From Stdlib Require Import String.
 
 Require Import sha256.
 
@@ -10,4 +10,4 @@ Definition test_sha := sha256.SHA_256' (sha256.str_to_bytes text).
 
 (* Generates sha.wasm file, that can be run with `node sha.js`
    The result type is hard-coded in sha.js for pretty-printing. See sha.js for more about pp. *)
-CertiCoq Compile Wasm -file "sha" test_sha.
+CertiRocq Compile Wasm -file "sha" test_sha.

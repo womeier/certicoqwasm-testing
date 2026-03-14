@@ -12,7 +12,7 @@ help:
 	@echo "make clean        : clean"
 
 foo.wasm:
-	ulimit -s $(STACKSIZE) && coqc foo.v
+	ulimit -s $(STACKSIZE) && rocq c foo.v
 
 foo_run: clean foo.wasm
 #	wasm-tools parse foo.wasm --wat -o foo.wat
@@ -21,14 +21,14 @@ foo_run: clean foo.wasm
 
 # This doesn't currently work.
 foo_check: clean foo.wasm
-	@python3 ../wasmcert/wasm_to_coq.py foo.wasm
-	coqc foo_wasm.v
+	@python3 ../wasmcert/wasm_to_rocq.py foo.wasm
+	rocq c foo_wasm.v
 
 # -------------------------------------------------------------
 
 sha.wasm: sha256.vo
 	rm -f sha.wat sha.wasm
-	ulimit -s $(STACKSIZE) && coqc sha.v
+	ulimit -s $(STACKSIZE) && rocq c sha.v
 
 sha: sha.wasm
 	python3 compare_output.py ./sha.js ./sha_output.txt
@@ -37,7 +37,7 @@ sha_explicit: sha.wasm
 	node sha.js
 
 %.vo: %.v
-	coqc $<
+	rocq c $<
 
 # -------------------------------------------------------------
 
