@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
+# Script to run a Wasm binary with the wasmtime runtime.
+# It works with current CertiCoq-Wasm, but is also backwards compatible with some earlier versions that are now obsolete.
+
 from wasmtime import Store, Module, Instance, Func, FuncType, ValType, Config, Engine
 import pp
 import sys
 import time
 import os
 
-assert (
-    len(sys.argv) == 3 or len(sys.argv) == 4
-), "Expected args: 0: folder containing Wasm binaries, 1: program, optionally 2: --no-precompile"
+assert len(sys.argv) == 3 or len(sys.argv) == 4, (
+    "Expected args: 0: folder containing Wasm binaries, 1: program, optionally 2: --no-precompile"
+)
 
 path = sys.argv[1]
 program = sys.argv[2]
@@ -50,11 +53,18 @@ if "evaluation/binaries" in os.path.abspath(path):
     folder = os.path.abspath(path).split("/")[-1]
     # benchmarks before swapping bool constructors
     old_versions = [
-       "cps-feb-01-24", "cps-0aryfast-feb-13-24", "non-cps-feb-07-24", "non-cps-0aryfast-return-feb-26-24",
-       "non-cps-ifs-unnested-mrch-22-24", "non-cps-grow-mem-func-mrch-24-24",
-       "non-cps-br_if-apr-12-24", "non-cps-wasmgc-may-16-24", "non-cps-primops-may-21-24",
-       "non-cps-no-imports-june-15-24", "cps-grow-mem-less-often-september-18-24",
-       "non-cps-grow-mem-less-often-august-30-24",
+        "cps-feb-01-24",
+        "cps-0aryfast-feb-13-24",
+        "non-cps-feb-07-24",
+        "non-cps-0aryfast-return-feb-26-24",
+        "non-cps-ifs-unnested-mrch-22-24",
+        "non-cps-grow-mem-func-mrch-24-24",
+        "non-cps-br_if-apr-12-24",
+        "non-cps-wasmgc-may-16-24",
+        "non-cps-primops-may-21-24",
+        "non-cps-no-imports-june-15-24",
+        "cps-grow-mem-less-often-september-18-24",
+        "non-cps-grow-mem-less-often-august-30-24",
     ]
     if folder in old_versions:
         pp_function_map = {
@@ -100,11 +110,13 @@ start_startup = time.time()
 
 if precompile:
     module = Module.deserialize_file(
-        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.wasm.tests.{program}.cwasm")
+        store.engine,
+        os.path.join(path, f"CertiCoq.Benchmarks.wasm.tests.{program}.cwasm"),
     )
 else:
     module = Module.from_file(
-        store.engine, os.path.join(path, f"CertiCoq.Benchmarks.wasm.tests.{program}.wasm")
+        store.engine,
+        os.path.join(path, f"CertiCoq.Benchmarks.wasm.tests.{program}.wasm"),
     )
 
 # instantiate module
