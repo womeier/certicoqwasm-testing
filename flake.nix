@@ -101,6 +101,7 @@
             pkgs.wasm-tools
             pkgs.nodejs_24
             pkgs.wasmtime
+            coqPackages.vscoq-language-server
           ];
           shellHook = ''
             echo "Entered nix shell."
