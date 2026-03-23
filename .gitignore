@@ -31,3 +31,4 @@ Makefile.plugin.conf
 __pycache__/
 
 result
+target
