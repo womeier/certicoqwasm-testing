@@ -6,7 +6,7 @@ struct Component;
 export!(Component);
 
 impl Guest for Component {
-    fn plus1(val: u32) -> u32 {
+    fn plus1(val: u64) -> u64 {
         val + 1
     }
 }
