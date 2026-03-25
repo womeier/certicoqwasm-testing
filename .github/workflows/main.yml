@@ -25,3 +25,5 @@ jobs:
           nix develop --command bash -c "make -C examples/wasm"
           nix develop --command bash -c "make -C examples/wasmcert"
           nix develop --command bash -c "make -C examples/certicoqwasm"
+          nix develop --command bash -c "make -C examples/component/plus1 run-comp"
+          nix develop --command bash -c "make -C examples/component/negb run-comp"

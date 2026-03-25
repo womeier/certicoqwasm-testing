@@ -37,6 +37,7 @@
             certirocq
             coq
             pkgs.wasm-tools
+            pkgs.binaryen
             pkgs.nodejs_24
             pkgs.wasmtime
             coqPackages.vscoq-language-server

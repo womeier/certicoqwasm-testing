@@ -1,0 +1,5 @@
+package local:demo;
+
+world wrapper-world {
+    export negb: func(val: bool) -> bool;
+}
