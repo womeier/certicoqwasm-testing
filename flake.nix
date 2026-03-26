@@ -23,7 +23,19 @@
             ];
         };
 
-        coqPackages = pkgs.coqPackages_9_1;
+        coqPackages = pkgs.coqPackages_9_1.overrideScope (
+          self: super: {
+            CertiRocq = super.CertiRocq.overrideAttrs (old: {
+              src = pkgs.fetchFromGitHub {
+                owner = "CertiRocq";
+                repo = "certirocq";
+                rev = "94f9a7a";
+                sha256 = "sha256-cE/ct17yoP3HXLJEDPok6CNiX8b3YD7N9Qm97ujk0GY=";
+              };
+            });
+          }
+        );
+
         coq = coqPackages.coq;
         certirocq = coqPackages.CertiRocq;
 
