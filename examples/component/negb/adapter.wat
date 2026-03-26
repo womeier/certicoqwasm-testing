@@ -3,6 +3,7 @@
   (import "rocq" "memory" (memory 1))
   (import "rocq" "mem_ptr" (global $mem_ptr (mut i32)))
   (import "rocq" "result" (global $result (mut i32)))
+  (import "rocq" "out_of_mem" (global $out_of_mem (mut i32)))
   (import "rocq" "main_function" (func $main_function))
   (import "rocq" "__indirect_function_table" (table 2 funcref))
 
@@ -10,6 +11,9 @@
   (type $rocq_func (func (param i32 i32)))
 
   ;; Export canonical ABI function
+  ;; Returns option<bool> via memory pointer
+  ;; Layout: discriminant (1 byte) at offset 0, payload (1 byte) at offset 1
+  ;; discriminant=0 means none, discriminant=1 means some
   ;; bool is represented as i32 (0=false, 1=true) in Component Model
   ;; CertiRocq represents bool as tagged immediates: false=1, true=3
   ;; Encoding: (tag << 1) | 1, so false(tag=0)=1, true(tag=1)=3
@@ -18,6 +22,11 @@
     (local $closure_ptr i32)
     (local $func_idx i32)
     (local $env_ptr i32)
+    (local $ret_ptr i32)
+
+    ;; Pre-allocate 32 bytes (for good measure) to return the result option
+    (local.set $ret_ptr (global.get $mem_ptr))
+    (global.set $mem_ptr (i32.add (global.get $mem_ptr) (i32.const 32)))
 
     ;; Call main_function to get the closure pointer
     (call $main_function)
@@ -38,8 +47,23 @@
       (local.get $arg)
       (local.get $func_idx))
 
-    ;; Read result and convert CertiRocq tagged immediate (1/3) to bool (0/1)
-    ;; Formula: val >> 1
-    (i32.shr_u (global.get $result) (i32.const 1))
+    ;; Check if out of memory
+    (if (global.get $out_of_mem)
+      (then
+        ;; Return none: discriminant = 0
+        (i32.store8 (local.get $ret_ptr) (i32.const 0))
+      )
+      (else
+        ;; Return some: discriminant = 1, payload = result converted to bool
+        ;; Convert CertiRocq-bool (1/3) to Wasm component bool (0/1)
+        ;; Formula: val >> 1
+        (i32.store8 (local.get $ret_ptr) (i32.const 1))
+        (i32.store8 (i32.add (local.get $ret_ptr) (i32.const 1))
+          (i32.shr_u (global.get $result) (i32.const 1)))
+      )
+    )
+
+    ;; Return pointer to option struct
+    (local.get $ret_ptr)
   )
 )

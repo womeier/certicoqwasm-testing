@@ -1,5 +1,5 @@
 package local:demo;
 
 world wrapper-world {
-    export plus1: func(val: u64) -> u64;
+    export plus1: func(val: u64) -> option<u64>;
 }

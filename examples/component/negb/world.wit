@@ -1,5 +1,5 @@
 package local:demo;
 
 world wrapper-world {
-    export negb: func(val: bool) -> bool;
+    export negb: func(val: bool) -> option<bool>;
 }
