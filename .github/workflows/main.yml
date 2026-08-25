@@ -19,6 +19,13 @@ jobs:
           name: womeier
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
+      # Use additional Cachix caches
+      - name: Use additional Cachix caches
+        run: |
+          cachix use coq
+          cachix use coq-community
+          cachix use math-comp
+
       # Build and push dev environment to Cachix
       - name: Build and push to Cachix
         run: |
