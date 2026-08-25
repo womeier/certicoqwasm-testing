@@ -23,9 +23,9 @@
             ];
         };
 
-        coqPackages = pkgs.coqPackages_9_1;
-        coq = coqPackages.coq;
-        certirocq = coqPackages.CertiRocq;
+        rocqPackages = pkgs.rocqPackages_9_1;
+        rocq-core = rocqPackages.rocq-core;
+        certirocq = rocqPackages.CertiRocq;
 
       in
       {
@@ -35,12 +35,12 @@
           name = "shell";
           packages = [
             certirocq
-            coq
+            rocq-core
             pkgs.wasm-tools
             pkgs.binaryen
             pkgs.nodejs_24
             pkgs.wasmtime
-            coqPackages.vsrocq-language-server
+            rocqPackages.vsrocq-language-server
           ];
           shellHook = ''
             echo "Entered nix shell."
