@@ -154,8 +154,8 @@ Definition hash_block (r: registers) (block: list int) : registers :=
 
 Lemma skipn_length_short:
   forall {A} n (al: list A),
-    (length al < n)%nat ->
-    (length (skipn n al) = 0)%nat.
+    (List.length al < n)%nat ->
+    (List.length (skipn n al) = 0)%nat.
 Proof.
  induction n; destruct al; simpl; intros; auto.
  lia.
@@ -164,21 +164,21 @@ Qed.
 
 Lemma skipn_length:
   forall {A} n (al: list A),
-    (length al >= n)%nat ->
-    (length (skipn n al) = length al - n)%nat.
+    (List.length al >= n)%nat ->
+    (List.length (skipn n al) = List.length al - n)%nat.
 Proof.
  induction n; destruct al; simpl; intros; auto.
  apply IHn. lia.
 Qed.
 
 
-Function hash_blocks (r: registers) (msg: list int) {measure length msg} : registers :=
+Function hash_blocks (r: registers) (msg: list int) {measure List.length msg} : registers :=
   match msg with
   | nil => r
   | _ => hash_blocks (hash_block r (firstn 16 msg)) (skipn 16 msg)
   end.
 Proof. intros.
- destruct (lt_dec (length msg) 16).
+ destruct (lt_dec (List.length msg) 16).
  rewrite skipn_length_short. simpl; lia. subst; simpl in *; lia.
  rewrite <- teq; auto.
  rewrite skipn_length; simpl; lia.
@@ -254,7 +254,7 @@ Fixpoint grab_and_process_block (n: nat) (r: registers) (firstrev msg: list int)
 (*iterate through all the message blocks; this could have been done with just a Fixpoint
   if we incorporated grab_and_process_block into process_msg, but I wanted to
   modularize a bit more. *)
-Function process_msg  (r: registers) (msg : list int) {measure length msg}  : registers :=
+Function process_msg  (r: registers) (msg : list int) {measure List.length msg}  : registers :=
  match msg with
  | nil => r
  | _ => let (r', msg') := grab_and_process_block 16 r nil msg
