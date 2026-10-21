@@ -28,14 +28,28 @@ Note that a `package.json` may be required for JavaScript imports.
 
 ## Performance Evaluation
 ### Setup
-- wabt (apt install wabt)
-- binaryen (nix profile install nixpkgs#binaryen, version 117 or higher)
-- wasmtime (nix profile install nixpkgs#wasmtime, most recent version, at least version 18)
+The `nix develop` shell of this repo provides everything below, with the wasmtime CLI and
+its python bindings pinned to the same version (`benchmark.py --engine=wasmtime-compile` requires this).
+Alternatively, install manually:
+- wabt
+- binaryen (version 117 or higher)
+- wasmtime (most recent version, at least version 18)
 - python bindings for wasmtime (pip install wasmtime, must be same version as wasmtime)
+- python packages click and tqdm
 ```
 # in evaluation/
 ./benchmark.py --engine=node --folder ./binaries/non-cps-cleanup-oct-13-24 --wasm-opt -O2
 ./benchmark.py --help
+```
+
+### Generating benchmarks
+To compile the benchmarks (`benchmarks/wasm/tests.v`) of the CertiRocq pinned in `flake.nix`
+with that same CertiRocq, run:
+```
+nix build .#wasm-benchmarks   # the .wasm files end up in ./result/
+
+# in evaluation/
+./benchmark.py --engine=node --folder ../result
 ```
 <details>
 <summary> More evaluation </summary>
