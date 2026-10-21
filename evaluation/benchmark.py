@@ -55,6 +55,7 @@ def get_info(path):
         "non-cps-grow-mem-less-often-august-30-24": "track available mem statically, only grow when necessary",
         # also bool constructors swapped https://github.com/CertiCoq/certicoq/pull/100
         "non-cps-cleanup-oct-13-24": "renamed globals, cleanup",
+        "oct-21-26": "no particular updates on the Wasm backend",
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
