@@ -2,10 +2,10 @@
 
 import os
 import click
-import pkg_resources
 import subprocess
 import json
 from tqdm import tqdm
+from importlib.metadata import PackageNotFoundError, version as package_version
 import time
 import pathlib
 
@@ -68,8 +68,10 @@ def get_info(path):
 
 def get_engine_version(engine):
     if engine == "wasmtime":
-        packages = {d.project_name: d.version for d in pkg_resources.working_set}
-        version = packages.get("wasmtime", "wasmtime-py not installed")
+        try:
+            version = package_version("wasmtime")
+        except PackageNotFoundError:
+            version = "wasmtime-py not installed"
         return f"wasmtime-py ({version})"
     elif engine == "wasmtime-compile":
         r = subprocess.run(["wasmtime", "--version"], capture_output=True)
