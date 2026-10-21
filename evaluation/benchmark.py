@@ -102,8 +102,8 @@ def create_optimized_programs(folder, flags):
     print(f"Creating programs optimized with wasm-opt {' '.join(flags)} in {folder}.")
     for program in tqdm(programs):
         program_opt = program_opt_name(program, flags)
-        path_orig = os.path.join(folder, f"CertiRocq.Benchmarks.wasm.tests.{program}.wasm")
-        path_opt = os.path.join(folder, f"CertiRocq.Benchmarks.wasm.tests.{program_opt}.wasm")
+        path_orig = os.path.join(folder, f"CertiRocq.Tests.wasm.tests.{program}.wasm")
+        path_opt = os.path.join(folder, f"CertiRocq.Tests.wasm.tests.{program_opt}.wasm")
         if not os.path.exists(path_opt):
             subprocess.run(
                 [
@@ -126,13 +126,13 @@ def wasmtime_compile_programs(folder, wasmopt_flag):
         if wasmopt_flag != ():
             program = program_opt_name(program, wasmopt_flag)
 
-        path = os.path.join(folder, f"CertiRocq.Benchmarks.wasm.tests.{program}.wasm")
+        path = os.path.join(folder, f"CertiRocq.Tests.wasm.tests.{program}.wasm")
         if not os.path.exists(path):
             print(f"wasmtime compile: didn't find input program {path}, skipping.")
             continue
 
         path_compiled = os.path.join(
-            folder, f"CertiRocq.Benchmarks.wasm.tests.{program}.cwasm"
+            folder, f"CertiRocq.Tests.wasm.tests.{program}.cwasm"
         )
         if not os.path.exists(path_compiled):
             subprocess.run(
@@ -162,7 +162,7 @@ def single_run_node(folder, program, wasmgc_cast_nochecks, verbose):
         capture_output=True,
     )
 
-    wasm_path = os.path.join(folder, f"CertiRocq.Benchmarks.wasm.tests.{program}.wasm")
+    wasm_path = os.path.join(folder, f"CertiRocq.Tests.wasm.tests.{program}.wasm")
     if r.returncode != 0:
         print(f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}")
         exit(1)
@@ -188,7 +188,7 @@ def single_run_wasmtime(folder, program, precompile, verbose):
         capture_output=True,
     )
 
-    wasm_path = os.path.join(folder, f"CertiRocq.Benchmarks.wasm.tests.{program}.{'c' if precompile else ''}wasm")
+    wasm_path = os.path.join(folder, f"CertiRocq.Tests.wasm.tests.{program}.{'c' if precompile else ''}wasm")
     if r.returncode != 0:
         print(f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}")
         exit(1)
@@ -257,7 +257,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
         folder_results = dict()
         for program in programs:
             program_name_orig = program
-            path = os.path.join(f, f"CertiRocq.Benchmarks.wasm.tests.{program}.wasm")
+            path = os.path.join(f, f"CertiRocq.Tests.wasm.tests.{program}.wasm")
 
             if not os.path.exists(path):
                 print(f"Didn't find {path}, skipping.")
@@ -265,7 +265,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
 
             if wasm_opt:
                 program = program_opt_name(program, wasm_opt)
-                path = f"{f}/CertiRocq.Benchmarks.wasm.tests.{program}.wasm"
+                path = f"{f}/CertiRocq.Tests.wasm.tests.{program}.wasm"
                 if not os.path.exists(path):
                     print(f"Didn't find optimized binary: {path}")
                     create_optimized_programs(f, wasm_opt)
@@ -273,7 +273,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                     exit()
 
             if engine == "wasmtime-compile":
-                path = os.path.join(f, f"CertiRocq.Benchmarks.wasm.tests.{program}.cwasm")
+                path = os.path.join(f, f"CertiRocq.Tests.wasm.tests.{program}.cwasm")
                 if not os.path.exists(path):
                     print(f"Didn't find compiled, optimized binary: {path}")
                     wasmtime_compile_programs(f, wasm_opt)
