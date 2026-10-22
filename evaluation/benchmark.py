@@ -55,7 +55,8 @@ def get_info(path):
         "non-cps-grow-mem-less-often-august-30-24": "track available mem statically, only grow when necessary",
         # also bool constructors swapped https://github.com/CertiCoq/certicoq/pull/100
         "non-cps-cleanup-oct-13-24": "renamed globals, cleanup",
-        "oct-21-26": "no particular updates on the Wasm backend",
+        # non-cps is the default for a long time, so don't include in the name anymore
+        "nixpkgs-0.9.1+9.1-oct-21-26": "no particular updates on the Wasm backend",
     }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
@@ -252,7 +253,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
         if wasm_opt:
             description = description + f" ({' '.join(wasm_opt)})"
         engine_version = get_engine_version(engine)
-        print(f"Running {description}, avg. of {runs} runs with {engine_version}.")
+        print(f"Running \"{description}\", avg. of {runs} runs with {engine_version}.")
 
         folder_results = dict()
         for program in programs:
