@@ -202,28 +202,6 @@ def single_run_wasmtime(folder, program, precompile, verbose):
     return json.loads(res)
 
 
-def org_table(tests, measures, results):
-    allrows = []
-    for (version, result) in results.items():
-        rows=[]
-        for measure in measures:
-            row = [measure] + ["" if result.get(t) is None else f"{result[t][measure]}" for t in tests]
-            rows.append(row)
-        allrows.append((version, rows))
-
-
-    orgrows = []
-    for (version, rows) in allrows:
-        orgrows.append(f"| {version} | " + " | ".join(rows[0]) + " |\n" + "".join(["|   | " + " | ".join(row) + " |\n" for row in rows[1:]]))
-
-    org_string = (("|---|---|---" + "".join(["|---" for t in tests]) + "|\n")
-                  +("|   |   |   " + " | ".join(tests) + " |\n")
-                  +("|---|---" + "".join(["|---" for t in tests]) + "|\n")
-                  +(("|---|---" + "".join(["|---" for t in tests]) + "|\n").join(orgrows))
-                  +("|---|---" + "".join(["|---" for t in tests]) + "|\n"))
-
-    print(org_string)
-
 @click.command()
 @click.option("--engine", type=str, help="Wasm engine (node|wasmtime|wasmtime-compile).", default="node")
 @click.option("--runs", type=int, help="Number of runs.", default=10)
@@ -233,8 +211,7 @@ def org_table(tests, measures, results):
 @click.option("--wasm-opt", type=str, help="Wasm-opt optimizations flag.", multiple=True)
 @click.option("--wasmgc-cast-nochecks", is_flag=True, help="Disables runtime checks for casts.")
 @click.option("--verbose", is_flag=True, help="Print debug information", default=False)
-@click.option("--print-org-table", is_flag=True, help="Print results as org mode table", default=False)
-def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_cast_nochecks, verbose, print_org_table):
+def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_cast_nochecks, verbose):
     if engine not in ["wasmtime", "wasmtime-compile", "node"]:
         print("Expected wasmtime or node runtime.")
         exit(1)
@@ -244,8 +221,6 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
         print("Expected at least one run.")
         exit(1)
 
-    all_results = dict()
-
     for f in folder:
         f_name = pathlib.PurePath(f).name
 
@@ -253,11 +228,9 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
         if wasm_opt:
             description = description + f" ({' '.join(wasm_opt)})"
         engine_version = get_engine_version(engine)
-        print(f"Running \"{description}\", avg. of {runs} runs with {engine_version}.")
+        print(f"Running \"{f_name}\" ({description}), avg. of {runs} runs with {engine_version}.")
 
-        folder_results = dict()
         for program in programs:
-            program_name_orig = program
             path = os.path.join(f, f"CertiRocq.Tests.wasm.tests.{program}.wasm")
 
             if not os.path.exists(path):
@@ -318,15 +291,6 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
             )
             binary_size_in_kb = int(os.stat(path).st_size / 1000)
 
-            folder_results[program_name_orig] = {
-                "time_startup": time_startup,
-                "time_main": time_main,
-                "time_pp": time_pp,
-                "sum": time_startup + time_main,
-                "bytes_used": memory_in_kb,
-                "binary_size_in_kb": binary_size_in_kb,
-            }
-
             # count spaces instead of using \t
             max_program_len = max(map(len, programs))
             program_orig_len = (
@@ -341,13 +305,6 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                 + (f", memory used: {memory_in_kb} KB" if memory_usage else "")
                 + (f", bin size: {binary_size_in_kb:>4} KB" if binary_size else "")
             )
-
-        all_results[f_name] = folder_results
-
-    if print_org_table:
-        print("\nPrinting org tables:\n")
-
-        org_table(programs, ["time_main", "time_pp", "sum"], all_results)
 
     print("")
 
