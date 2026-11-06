@@ -21,6 +21,8 @@ precompile = True
 if "--no-precompile" in sys.argv:
     precompile = False
 
+# Has to match the Config that compiled the .cwasm in benchmark.py: wasmtime
+# fingerprints it into the artifact and refuses a mismatch.
 config = Config()
 config.wasm_tail_call = True
 

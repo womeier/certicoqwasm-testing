@@ -5,9 +5,11 @@ import click
 import subprocess
 import json
 from tqdm import tqdm
-from importlib.metadata import PackageNotFoundError, version as package_version
+from importlib.metadata import version as package_version
 import time
 import pathlib
+from wasmtime import Config, Engine, Module
+import sys
 
 CWD = os.path.abspath(os.path.dirname(__file__))
 os.chdir(CWD)
@@ -69,33 +71,14 @@ def get_info(path):
 
 
 def get_engine_version(engine):
-    if engine == "wasmtime":
-        try:
-            version = package_version("wasmtime")
-        except PackageNotFoundError:
-            version = "wasmtime-py not installed"
-        return f"wasmtime-py ({version})"
-    elif engine == "wasmtime-compile":
-        r = subprocess.run(["wasmtime", "--version"], capture_output=True)
-        return r.stdout.decode("ascii").strip().replace(" ", " (") + ")"
-    elif engine == "node":
-        r = subprocess.run([NODE, "--version"], capture_output=True)
+    if engine == "node":
+        r = subprocess.run([NODE, "--version"], capture_output=True, check=True)
         return f"Node.js ({r.stdout.decode('ascii').strip()})"
-    else:
-        print(f"Engine {engine} not found.")
-        exit(1)
-
-
-def ensure_wasmtime_same_version():
-    version_lib = get_engine_version("wasmtime").split("(")[1][:-1]
-    version_standalone = get_engine_version("wasmtime-compile").split("(")[1][:-1]
-    if version_lib != version_standalone:
-        print(f"Found two different version of wasmtime: standalone {version_standalone} and python-lib {version_lib}. They need to be the same.")
-        exit(1)
+    return f"wasmtime-py ({package_version('wasmtime')})"
 
 
 def program_opt_name(program, flags):
-    flags = map(lambda f: f.replace("-", ""), flags)
+    flags = [f.replace("-", "") for f in flags]
     return f"{program}-opt_{'-'.join(flags)}"
 
 
@@ -117,12 +100,18 @@ def create_optimized_programs(folder, flags):
                     path_orig,
                     "--output",
                     path_opt,
-                ]
+                ],
+                check=True,
             )
 
 
 def wasmtime_compile_programs(folder, wasmopt_flag):
     print(f"Compiling wasm modules AOT with wasmtime in {folder}.")
+    # wasmtime fingerprints the Config into the artifact and refuses to
+    # deserialize one compiled under a different one, so this has to stay in sync with the Config in run-wasmtime.py.
+    config = Config()
+    config.wasm_tail_call = True
+    engine = Engine(config)
     for program in tqdm(programs):
         if wasmopt_flag != ():
             program = program_opt_name(program, wasmopt_flag)
@@ -136,17 +125,10 @@ def wasmtime_compile_programs(folder, wasmopt_flag):
             folder, f"CertiRocq.Tests.wasm.tests.{program}.cwasm"
         )
         if not os.path.exists(path_compiled):
-            subprocess.run(
-                [
-                    "wasmtime",
-                    "compile",
-                    "-W",
-                    "tail-call=y",
-                    path,
-                    "--output",
-                    path_compiled,
-                ]
-            )
+            with open(path, "rb") as f:
+                module = Module(engine, f.read())
+            with open(path_compiled, "wb") as f:
+                f.write(module.serialize())
 
 
 def single_run_node(folder, program, wasmgc_cast_nochecks, verbose):
@@ -166,7 +148,7 @@ def single_run_node(folder, program, wasmgc_cast_nochecks, verbose):
     wasm_path = os.path.join(folder, f"CertiRocq.Tests.wasm.tests.{program}.wasm")
     if r.returncode != 0:
         print(f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}")
-        exit(1)
+        sys.exit(1)
 
     if verbose:
         print("STDOUT: " + r.stdout.decode("ascii"))
@@ -180,7 +162,7 @@ def single_run_wasmtime(folder, program, precompile, verbose):
     precompile_flag = [] if precompile else ["--no-precompile"]
     r = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "run-wasmtime.py",
             folder,
             program,
@@ -192,7 +174,7 @@ def single_run_wasmtime(folder, program, precompile, verbose):
     wasm_path = os.path.join(folder, f"CertiRocq.Tests.wasm.tests.{program}.{'c' if precompile else ''}wasm")
     if r.returncode != 0:
         print(f"Running {wasm_path} returned non-0 returncode, stderr: {r.stderr}")
-        exit(1)
+        sys.exit(1)
 
     if verbose:
         print("STDOUT: " + r.stdout.decode("ascii"))
@@ -214,12 +196,10 @@ def single_run_wasmtime(folder, program, precompile, verbose):
 def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_cast_nochecks, verbose):
     if engine not in ["wasmtime", "wasmtime-compile", "node"]:
         print("Expected wasmtime or node runtime.")
-        exit(1)
-    if engine == "wasmtime-compile":
-        ensure_wasmtime_same_version()
+        sys.exit(1)
     if runs <= 0:
         print("Expected at least one run.")
-        exit(1)
+        sys.exit(1)
 
     for f in folder:
         f_name = pathlib.PurePath(f).name
@@ -244,7 +224,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                     print(f"Didn't find optimized binary: {path}")
                     create_optimized_programs(f, wasm_opt)
                     print("Done. Please run again.")
-                    exit()
+                    sys.exit()
 
             if engine == "wasmtime-compile":
                 path = os.path.join(f, f"CertiRocq.Tests.wasm.tests.{program}.cwasm")
@@ -252,7 +232,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                     print(f"Didn't find compiled, optimized binary: {path}")
                     wasmtime_compile_programs(f, wasm_opt)
                     print("Done. Please run again.")
-                    exit()
+                    sys.exit()
 
             values = []
             for run in range(runs):
@@ -269,9 +249,9 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                 assert res is not None, "No value returned."
                 values.append(res)
 
-            result = dict()
+            result = {}
             for meas in measurements:
-                result[meas] = list()
+                result[meas] = []
 
             for val in values:
                 for meas in measurements:
@@ -306,7 +286,7 @@ def measure(engine, runs, memory_usage, binary_size, folder, wasm_opt, wasmgc_ca
                 + (f", bin size: {binary_size_in_kb:>4} KB" if binary_size else "")
             )
 
-    print("")
+    print()
 
 
 if __name__ == "__main__":

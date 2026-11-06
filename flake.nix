@@ -27,19 +27,12 @@
         rocq-core = rocqPackages.rocq-core;
         certirocq = rocqPackages.CertiRocq;
 
-        # wasmtime CLI (used to AOT-compile the modules) and the Python bindings
-        # need to have the same version.
-        wasmtime = pkgs.wasmtime;
-        wasmtime-py = pkgs.python3Packages.wasmtime.overridePythonAttrs (old: {
-          version = wasmtime.version;
-          src = old.src; # keep the wasmtime-py tag the hash belongs to
-          postPatch = old.postPatch + ''
-            echo "${wasmtime.version}" > VERSION
-          '';
-        });
-
+        # Both running and AOT-compiling the modules go through the Python
+        # bindings (Module.serialize / Module.deserialize_file), so the wasmtime
+        # CLI is no longer needed -- which also retires the version-matching
+        # dance the two used to require.
         python3 = pkgs.python3.withPackages (ps: [
-          wasmtime-py
+          ps.wasmtime
           ps.click
           ps.tqdm
         ]);
@@ -93,7 +86,6 @@
             pkgs.wasm-tools
             pkgs.binaryen
             pkgs.nodejs_24
-            wasmtime
             python3
             rocqPackages.vsrocq-language-server
           ];
