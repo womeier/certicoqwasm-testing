@@ -81,12 +81,12 @@
         devShells.default = pkgs.mkShell {
           name = "shell";
           packages = [
-            wasmtime
             certirocq
             rocq-core
             pkgs.wasm-tools
             pkgs.binaryen
             pkgs.nodejs_24
+            pkgs.wasmtime
             python3
             rocqPackages.vsrocq-language-server
           ];
