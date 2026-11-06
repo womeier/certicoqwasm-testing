@@ -81,6 +81,7 @@
         devShells.default = pkgs.mkShell {
           name = "shell";
           packages = [
+            wasmtime
             certirocq
             rocq-core
             pkgs.wasm-tools
