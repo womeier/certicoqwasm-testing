@@ -1,6 +1,10 @@
-name:        anf-rewrite-mrch-22-26
-description: ANF rewrite (#143): applications are always Eletapp, so tail calls are gone
+name:        anf-rewrite-mrch-18-26
+description: ANF rewrite (#143, 2253b4e8): applications are always Eletapp, so tail calls are gone
 certirocq:   0.9.1+9.1 (womeier/certirocq @ a3f40fd7ad2ef32cb6526febafa887588bb58363)
+note:        2253b4e8 is the commit that changed the generated code: it is the only
+             commit in 49cd1c23..a3f40fd7 that touches theories/. Built at a3f40fd7
+             because 2253b4e8 predates the benchmarks/ -> tests/ rename; both
+             revisions were built and produce byte-identical .wasm (13/13).
 staged:      2026-11-07 from /nix/store/aw6mm9mhdcynakm9xjrswfip4i7gf9sf-certirocq-wasm-benchmarks-a3f40fd7
 
 toolchain that produced these .wasm files:
