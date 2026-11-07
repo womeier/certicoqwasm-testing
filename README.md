@@ -38,7 +38,7 @@ Alternatively, install manually:
 - python packages click and tqdm
 ```
 # in evaluation/
-./benchmark.py --engine=node --folder ./binaries/non-cps-cleanup-oct-13-24 --wasm-opt -O2
+./benchmark.py --engine=node --folder ./binaries/old/non-cps-cleanup-oct-13-24 --wasm-opt -O2
 ./benchmark.py --help
 ```
 
@@ -57,11 +57,19 @@ nix build .#wasm-benchmarks   # the .wasm files end up in ./result/
 
 ### Adding new CertiCoq-Wasm binaries for evaluation
 1) Create branch in main repo `benchmarks_<NAME>`
-1) Create folder with name `<NAME>` in `./evaluation/binaries/`, put binaries in it
-3) Insert folder with short description in `./evaluation/benchmark.py`, possibly update program list
-4) Then you can run the benchmark as described above.
-5) Add the expected result in file in `./evaluation/results`
-6) Run the `./evaluation/sanity-checks.py` script.
+2) Stage the binaries of the CertiRocq pinned in `flake.nix`, which also records the
+   description in the folder (`INFO.txt`, read by `benchmark.py`):
+   ```
+   # in evaluation/
+   ./stage-binaries.py <NAME> -d "short description"
+   ```
+   Pass `--result ../result` to stage an existing build instead of running `nix build`.
+   Binaries staged before the nixpkgs release live in `./evaluation/binaries/old/` and
+   are instead described by `benchmarks_info` in `./evaluation/benchmark.py`;
+   possibly update the program list there.
+3) Then you can run the benchmark as described above.
+4) Add the expected result in file in `./evaluation/results`
+5) Run the `./evaluation/sanity-checks.py` script.
 
 ### Evaluation of other extraction mechanisms
 To evaluate the extraction via Rust (more [information](./evaluation/rust_to_wasm/setup.md)), run the following in `evaluation/rust_to_wasm/`:

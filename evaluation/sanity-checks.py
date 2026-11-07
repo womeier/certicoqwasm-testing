@@ -3,7 +3,12 @@ import os
 import subprocess
 from tqdm import tqdm
 
-folders = list(filter(lambda x: x != "clean.py", os.listdir("./binaries/")))
+# every folder holding .wasm files, including the pre-nixpkgs-release ones in binaries/old/
+folders = sorted(
+    os.path.relpath(root, "./binaries")
+    for root, _, files in os.walk("./binaries")
+    if any(f.endswith(".wasm") for f in files)
+)
 programs = [
     "demo1",
     "demo2",

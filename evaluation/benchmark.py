@@ -35,6 +35,7 @@ programs = [
 #    "coqprime", # comment in for wasmgc, and non-cps-grow-mem-less-often-august-30-24 or later
 ]
 
+# the folders below live in binaries/old/ (staged before the nixpkgs release)
 benchmarks_info = {
     "cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary (CoqPL)",
     "cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
@@ -68,7 +69,7 @@ def get_info(path):
                     return line.split(":", 1)[1].strip()
 
     try:
-        info = benchmarks_info[path.replace("binaries/", "")]
+        info = benchmarks_info[os.path.basename(path)]
     except KeyError:
         print("Running new binaries. Did you run MAKE INSTALL?\n")
         time.sleep(1)

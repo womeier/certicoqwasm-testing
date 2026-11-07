@@ -43,7 +43,7 @@ import * as fs from 'fs';
 var args = process.argv.slice(2);
 if (args.length != 2) {
     console.log("Expected two args: 0: path to folder containing wasm file to run, 1: program.");
-    console.log("e.g.: $ node run-node.js ./binaries/non-cps-grow-mem-less-often-august-30-24 vs_easy");
+    console.log("e.g.: $ node run-node.js ./binaries/old/non-cps-grow-mem-less-often-august-30-24 vs_easy");
     process.exit(1);
 }
 var path = args[0];
