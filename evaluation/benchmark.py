@@ -35,6 +35,23 @@ programs = [
 #    "coqprime", # comment in for wasmgc, and non-cps-grow-mem-less-often-august-30-24 or later
 ]
 
+benchmarks_info = {
+    "cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary (CoqPL)",
+    "cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
+    "non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
+    "non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
+    "non-cps-ifs-unnested-mrch-22-24": "non-cps (same as feb-26-24, update MC), don't nest if statements",
+    "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function",
+    "non-cps-br_if-apr-12-24": "non-cps (same as mrch-24-24), br_if instead of if return",
+    "non-cps-wasmgc-may-16-24": "WasmGC demo (unverified), based on apr-12-24",
+    "non-cps-primops-may-21-24": "new constr. repr. + primops, based on apr-12-24",
+    "non-cps-no-imports-june-15-24": "removed imports, otherwise may-21-24", # this will be removed in the future
+
+    "non-cps-grow-mem-less-often-august-30-24": "track available mem statically, only grow when necessary",
+    # also bool constructors swapped https://github.com/CertiCoq/certicoq/pull/100
+    "non-cps-cleanup-oct-13-24": "renamed globals, cleanup",
+}
+
 
 def get_info(path):
     if path[-1] == "/":
@@ -42,24 +59,14 @@ def get_info(path):
     if path[0:2] == "./":
         path = path[2:]
 
-    benchmarks_info = {
-        "cps-feb-01-24": "CPS, inserted tailcalls, naive 0ary (CoqPL)",
-        "cps-0aryfast-feb-13-24": "CPS, inserted tailcalls (no return instrs)",
-        "non-cps-feb-07-24": "non-CPS, (tailcalls, no return instrs) naive 0ary",
-        "non-cps-0aryfast-return-feb-26-24": "non-cps, with return instr, 0ary",
-        "non-cps-ifs-unnested-mrch-22-24": "non-cps (same as feb-26-24, update MC), don't nest if statements",
-        "non-cps-grow-mem-func-mrch-24-24": "non-cps (same as mrch-22-24), grow_mem in separate function",
-        "non-cps-br_if-apr-12-24": "non-cps (same as mrch-24-24), br_if instead of if return",
-        "non-cps-wasmgc-may-16-24": "WasmGC demo (unverified), based on apr-12-24",
-        "non-cps-primops-may-21-24": "new constr. repr. + primops, based on apr-12-24",
-        "non-cps-no-imports-june-15-24": "removed imports, otherwise may-21-24", # this will be removed in the future
+    # folders staged by stage-binaries.py describe themselves
+    info_file = os.path.join(path, "INFO.txt")
+    if os.path.exists(info_file):
+        with open(info_file) as f:
+            for line in f:
+                if line.startswith("description:"):
+                    return line.split(":", 1)[1].strip()
 
-        "non-cps-grow-mem-less-often-august-30-24": "track available mem statically, only grow when necessary",
-        # also bool constructors swapped https://github.com/CertiCoq/certicoq/pull/100
-        "non-cps-cleanup-oct-13-24": "renamed globals, cleanup",
-        # non-cps is the default for a long time, so don't include in the name anymore
-        "nixpkgs-0.9.1+9.1-oct-21-26": "no particular updates on the Wasm backend",
-    }
     try:
         info = benchmarks_info[path.replace("binaries/", "")]
     except KeyError:

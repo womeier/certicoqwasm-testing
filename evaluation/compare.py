@@ -11,7 +11,7 @@ Usage
 -----
     ./compare.py FOLDER_A FOLDER_B [-n RUNS] [--engine node] [--program vs_hard]
 
-    ./compare.py binaries/nixpkgs-0.9.1+9.1-oct-21-26 ../result \\
+    ./compare.py binaries/nixpkgs-0.9.1+9.1-mrch-18-26 ../result \\
         -n 20 --null -o report.md
 
 Needs `node` and the `wasmtime` Python module on PATH (both are in the devShell).
@@ -41,19 +41,11 @@ PREFIX = "CertiRocq.Tests.wasm.tests."
 
 # A big stack for *every* program, on both engines, on both sides. The three
 # sm_gauss_* need it (they recurse linearly from 2253b4e8 on, once the tail calls
-# are gone), and giving it to all of them costs nothing measurable -- the flags
-# only move a limit, they do not commit memory -- while keeping one engine Config,
-# one .cwasm fingerprint and one execution path for all programs, so programs stay
-# comparable to each other and not just within an A/B pair.
+# are gone)
 #
 # The price is that a stack overflow no longer reports itself: at the default
 # stack a program that lost its tail calls says "RangeError: Maximum call stack
 # size exceeded", which is a finding. Runtime and memory still show it.
-#
-# Caveat: node's --stack-size only moves V8's limit, it does not grow the OS
-# thread stack, so on a host with a small `ulimit -s` a real overflow segfaults
-# instead of raising. wasmtime is safe either way -- we size the host thread
-# ourselves below.
 BIG_STACK_KB = 200000                     # node --stack-size, in KB
 BIG_STACK_BYTES = BIG_STACK_KB * 1024     # wasmtime max_wasm_stack, same budget
 # wasmtime executes wasm on the calling thread's stack, so the host stack has to
