@@ -39,11 +39,21 @@ from types import SimpleNamespace
 
 PREFIX = "CertiRocq.Tests.wasm.tests."
 
-# node's default stack is not enough for the programs that lost their tail calls:
-# all three sm_gauss_* recurse linearly from 2253b4e8 on. Applied to both sides
-# identically, so the comparison stays fair. (sm_gauss_PrimInt additionally traps
-# outright from some later revision on, which no stack size fixes.)
-BIG_STACK = ("sm_gauss_nat", "sm_gauss_N", "sm_gauss_PrimInt")
+# A big stack for *every* program, on both engines, on both sides. The three
+# sm_gauss_* need it (they recurse linearly from 2253b4e8 on, once the tail calls
+# are gone), and giving it to all of them costs nothing measurable -- the flags
+# only move a limit, they do not commit memory -- while keeping one engine Config,
+# one .cwasm fingerprint and one execution path for all programs, so programs stay
+# comparable to each other and not just within an A/B pair.
+#
+# The price is that a stack overflow no longer reports itself: at the default
+# stack a program that lost its tail calls says "RangeError: Maximum call stack
+# size exceeded", which is a finding. Runtime and memory still show it.
+#
+# Caveat: node's --stack-size only moves V8's limit, it does not grow the OS
+# thread stack, so on a host with a small `ulimit -s` a real overflow segfaults
+# instead of raising. wasmtime is safe either way -- we size the host thread
+# ourselves below.
 BIG_STACK_KB = 200000                     # node --stack-size, in KB
 BIG_STACK_BYTES = BIG_STACK_KB * 1024     # wasmtime max_wasm_stack, same budget
 # wasmtime executes wasm on the calling thread's stack, so the host stack has to
@@ -94,10 +104,8 @@ const importObject = { env: { write_char: () => {}, write_int: () => {} } };
 
 
 def run_node(runner: Path, wasm: Path, program: str, node: str) -> dict:
-    cmd = [node]
-    if program in BIG_STACK:
-        cmd.append(f"--stack-size={BIG_STACK_KB}")
-    cmd += [str(runner), str(wasm), program]
+    cmd = [node, f"--stack-size={BIG_STACK_KB}",
+           str(runner), str(wasm), program]
     p = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     line = next((l for l in p.stdout.splitlines() if l.startswith("{")), None)
     if line is None:
@@ -110,7 +118,7 @@ def run_node(runner: Path, wasm: Path, program: str, node: str) -> dict:
 # Runs in a fresh subprocess (`--worker-wasmtime`) so every measurement pays a
 # cold engine, exactly like the node side.
 
-def wasmtime_config(max_stack: int):
+def wasmtime_config():
     """The Config for both compiling and running. wasmtime fingerprints the
     compilation settings into the .cwasm and refuses a mismatch, so the two must
     be built the same way."""
@@ -118,27 +126,26 @@ def wasmtime_config(max_stack: int):
 
     config = Config()
     config.wasm_tail_call = True
-    if max_stack:
-        # wasmtime rejects max_wasm_stack > async_stack_size (2 MiB by default) even
-        # for sync execution, and wasmtime-py binds no setter for it -- so reach for
-        # the C function the package already loads. Getting this wrong aborts the
-        # process from Rust rather than raising, hence the explicit check.
-        import wasmtime._ffi as ffi
+    # wasmtime rejects max_wasm_stack > async_stack_size (2 MiB by default) even
+    # for sync execution, and wasmtime-py binds no setter for it -- so reach for
+    # the C function the package already loads. Getting this wrong aborts the
+    # process from Rust rather than raising, hence the explicit check.
+    import wasmtime._ffi as ffi
 
-        setter = getattr(ffi.dll, "wasmtime_config_async_stack_size_set", None)
-        if setter is None:
-            raise RuntimeError(
-                "this wasmtime-py exposes no async_stack_size setter, so max_wasm_stack "
-                "cannot be raised above 2 MiB; rerun with --engine node")
-        setter(config.ptr(), max_stack + HOST_STACK_SLACK)
-        config.max_wasm_stack = max_stack
+    setter = getattr(ffi.dll, "wasmtime_config_async_stack_size_set", None)
+    if setter is None:
+        raise RuntimeError(
+            "this wasmtime-py exposes no async_stack_size setter, so max_wasm_stack "
+            "cannot be raised above 2 MiB; rerun with --engine node")
+    setter(config.ptr(), BIG_STACK_BYTES + HOST_STACK_SLACK)
+    config.max_wasm_stack = BIG_STACK_BYTES
     return config
 
 
-def _wasmtime_measure(cwasm: str, max_stack: int) -> dict:
+def _wasmtime_measure(cwasm: str) -> dict:
     from wasmtime import Engine, Instance, Module, Store
 
-    store = Store(Engine(wasmtime_config(max_stack)))
+    store = Store(Engine(wasmtime_config()))
     try:
         t0 = time.perf_counter()
         module = Module.deserialize_file(store.engine, cwasm)
@@ -168,23 +175,22 @@ def _wasmtime_measure(cwasm: str, max_stack: int) -> dict:
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}".split(chr(10))[0][:200]}
 
 
-def worker_wasmtime(cwasm: str, max_stack: int = 0) -> int:
-    if max_stack:
-        threading.stack_size(max_stack + HOST_STACK_SLACK)
-        box: dict = {}
-        t = threading.Thread(target=lambda: box.update(_wasmtime_measure(cwasm, max_stack)))
-        t.start()
-        t.join()
-        out = box or {"ok": False, "error": "worker thread produced no result"}
-    else:
-        out = _wasmtime_measure(cwasm, 0)
+def worker_wasmtime(cwasm: str) -> int:
+    # max_wasm_stack is only a limit: the stack itself is the host thread's, so the
+    # run has to happen on a thread we sized ourselves.
+    threading.stack_size(BIG_STACK_BYTES + HOST_STACK_SLACK)
+    box: dict = {}
+    t = threading.Thread(target=lambda: box.update(_wasmtime_measure(cwasm)))
+    t.start()
+    t.join()
+    out = box or {"ok": False, "error": "worker thread produced no result"}
     print(json.dumps(out))
     return 0
 
 
-def run_wasmtime(cwasm: Path, max_stack: int) -> dict:
+def run_wasmtime(cwasm: Path) -> dict:
     p = subprocess.run([sys.executable, os.path.abspath(__file__), "--worker-wasmtime",
-                        str(cwasm), str(max_stack)],
+                        str(cwasm)],
                        capture_output=True, text=True, timeout=600)
     line = next((l for l in p.stdout.splitlines() if l.startswith("{")), None)
     if line is None:
@@ -196,11 +202,11 @@ def run_wasmtime(cwasm: Path, max_stack: int) -> dict:
     return json.loads(line)
 
 
-def aot_compile(wasm: Path, out: Path, max_stack: int) -> tuple[float | None, str | None]:
+def aot_compile(wasm: Path, out: Path) -> tuple[float | None, str | None]:
     """Serialize `wasm` to a .cwasm, returning (compile_ms, error)."""
     from wasmtime import Engine, Module
 
-    engine = Engine(wasmtime_config(max_stack))
+    engine = Engine(wasmtime_config())
     try:
         t0 = time.perf_counter()
         blob = Module(engine, wasm.read_bytes()).serialize()
@@ -331,10 +337,6 @@ def main(folder_a, folder_b, runs, engine, program, node,
                            folder_a=folder_a, folder_b=folder_b,
                            programs=program)
 
-    def wasm_stack(prog: str) -> int:
-        """Both sides always get the same budget, so the comparison stays fair."""
-        return BIG_STACK_BYTES if prog in BIG_STACK else 0
-
     engines = list(engine) or ["node", "wasmtime"]
 
     variants = [
@@ -372,7 +374,7 @@ def main(folder_a, folder_b, runs, engine, program, node,
             d.mkdir(parents=True, exist_ok=True)
             for prog in common:
                 out = d / f"{prog}.cwasm"
-                ms, err = aot_compile(v.wasm[prog], out, wasm_stack(prog))
+                ms, err = aot_compile(v.wasm[prog], out)
                 if err:
                     v.errors[("wasmtime", prog)] = f"AOT compile failed: {err}"
                 else:
@@ -411,7 +413,7 @@ def main(folder_a, folder_b, runs, engine, program, node,
                     else:
                         if prog not in v.cwasm:
                             continue
-                        r = run_wasmtime(v.cwasm[prog], wasm_stack(prog))
+                        r = run_wasmtime(v.cwasm[prog])
                     if not r.get("ok"):
                         v.errors[key] = r.get("error", "unknown failure")
                         continue
@@ -641,12 +643,11 @@ def render(variants, common, only_a, only_b, engines, opts) -> str:
     if "wasmtime" in engines:
         w("- wasmtime runs AOT: each `.wasm` is serialized to a `.cwasm` with "
           "`wasm_tail_call = True`, then `deserialize_file`d per run.")
-        w(f"- `max_wasm_stack` = {BIG_STACK_BYTES // 1024 // 1024} MB for "
-          f"{', '.join(f'`{p}`' for p in BIG_STACK)}, wasmtime's default elsewhere; "
-          f"the run happens on a thread with a correspondingly larger host stack.")
+        w(f"- `max_wasm_stack` = {BIG_STACK_BYTES // 1024 // 1024} MB for every "
+          f"program, on a thread with a correspondingly larger host stack.")
     if "node" in engines:
-        w(f"- `--stack-size={BIG_STACK_KB}` for {', '.join(f'`{p}`' for p in BIG_STACK)} "
-          f"(both sides): they recurse linearly and overflow node's default stack.")
+        w(f"- `--stack-size={BIG_STACK_KB}` for every program (both sides): the "
+          f"deeply-recursive ones need it, and it is free for the rest.")
     w(f"- host: {platform.platform()}, {os.cpu_count()} cpus")
     for tool, cmd in (("node", [opts.node, "--version"]),):
         if "node" in engines and shutil.which(cmd[0]):
@@ -669,5 +670,5 @@ def render(variants, common, only_a, only_b, engines, opts) -> str:
 
 if __name__ == "__main__":
     if len(sys.argv) >= 3 and sys.argv[1] == "--worker-wasmtime":
-        sys.exit(worker_wasmtime(sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 0))
+        sys.exit(worker_wasmtime(sys.argv[2]))
     main()
