@@ -6,5 +6,5 @@ Definition my_negb (b : bool) := negb b.
 Compute (my_negb true).
 Compute (my_negb false).
 
-CertiRocq Compile Wasm -file "rocq-negb" my_negb.
-CertiRocq Show IR -file "rocq-negb" my_negb.
+CertiRocq Compile Wasm --output "rocq-negb" my_negb.
+CertiRocq Show IR --output "rocq-negb" my_negb.

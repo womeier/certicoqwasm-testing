@@ -11,5 +11,5 @@ Compute (plus1 2).
 
 (* Pretty-printing is hard-coded to bools, see foo.js
  * We have pretty-printing for the most important types in /evaluation/pp.js *)
-CertiRocq Compile Wasm -file "rocq-plus1" plus1.
-CertiRocq Show IR -file "rocq-plus1" plus1.
+CertiRocq Compile Wasm --output "rocq-plus1" plus1.
+CertiRocq Show IR --output "rocq-plus1" plus1.
