@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "certirocq-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793708125,
+        "narHash": "sha256-fv6ZynXjTtIbIa33WYp1fn4bKY+iNSTyvle6ICWHG5k=",
+        "owner": "CertiRocq",
+        "repo": "certirocq",
+        "rev": "943b52ae654708130f241ccf8a50ecb95a7956e2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CertiRocq",
+        "repo": "certirocq",
+        "rev": "943b52ae654708130f241ccf8a50ecb95a7956e2",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -36,6 +53,7 @@
     },
     "root": {
       "inputs": {
+        "certirocq-src": "certirocq-src",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs"
       }
