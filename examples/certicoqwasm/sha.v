@@ -10,4 +10,4 @@ Definition test_sha := sha256.SHA_256' (sha256.str_to_bytes text).
 
 (* Generates sha.wasm file, that can be run with `node sha.js`
    The result type is hard-coded in sha.js for pretty-printing. See sha.js for more about pp. *)
-CertiRocq Compile Wasm -file "sha" test_sha.
+CertiRocq Compile Wasm --output "sha" test_sha.
