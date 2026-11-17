@@ -83,50 +83,10 @@
             # CertiRocq pin below.
             wasmcert = super.wasmcert.override { version = "2.2.1"; };
 
-            # the revision under test comes from the certirocq-src input above
-            CertiRocq = (super.CertiRocq.override { version = "0.9.1+9.1"; }).overrideAttrs (old: {
-              # plugins/manifests/generate.py, called from the Makefile since the
-              # 0.9.1 release, needs a python3 in the build environment
-              nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.python3 ];
-
-              # nixpkgs works around two things upstream fixed in PR #162 (merged
-              # before 943b52ae) and does so with --replace-fail, so its patch phase
-              # hard-fails on every revision that already carries the fix. Guard each
-              # workaround instead, so old and new revisions both patch cleanly.
-              # Note the aST pattern is a prefix of its own replacement, so the guard
-              # has to match the whole line -- --replace-fail would happily corrupt an
-              # already-fixed clean_extraction.sh.
-              postPatch = ''
-                patchShebangs ./configure.sh
-                patchShebangs ./clean_extraction.sh
-                patchShebangs ./make_plugin.sh
-
-                if grep -q "gcc -I /opt/homebrew/include" runtime/Makefile; then
-                  substituteInPlace runtime/Makefile \
-                    --replace-fail "gcc -I /opt/homebrew/include" '$(CC)'
-                fi
-
-                if grep -qx "mv aST.ml AST.ml" clean_extraction.sh; then
-                  substituteInPlace clean_extraction.sh \
-                    --replace-fail "mv aST.ml AST.ml" "mv aST.ml AST.ml.tmp && mv AST.ml.tmp AST.ml" \
-                    --replace-fail "mv aST.mli AST.mli" "mv aST.mli AST.mli.tmp && mv AST.mli.tmp AST.mli"
-                fi
-              '';
-
-              # the 0.9.1 release keeps plugin/ and cplugin/ at the top level, main
-              # moved them under plugins/
-              installPhase =
-                ''
-                  PLUGINS=plugins
-                  if [ ! -d plugins/plugin ]; then PLUGINS=.; fi
-                ''
-                + builtins.replaceStrings
-                  [ "make -C plugin install" "make -C cplugin install" ]
-                  [ "make -C $PLUGINS/plugin install" "make -C $PLUGINS/cplugin install" ]
-                  old.installPhase;
-
-              src = certirocq-src;
-            });
+            # Use the build recipe shipped with the revision under test.
+            CertiRocq = self.callPackage (certirocq-src + "/.nix/coq-overlays/CertiRocq") {
+              version = toString certirocq-src;
+            };
           }
         );
         rocq-core = rocqPackages.rocq-core;
